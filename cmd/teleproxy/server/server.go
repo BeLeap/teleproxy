@@ -6,6 +6,7 @@ import (
 
 	"beleap.dev/teleproxy/pkg/teleproxy/proxy"
 	"beleap.dev/teleproxy/pkg/teleproxy/server"
+	"beleap.dev/teleproxy/pkg/teleproxy/spyconfigs"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -16,8 +17,10 @@ var ServerCommand = &cobra.Command{
 		port := viper.GetInt("port")
 		proxyPort := viper.GetInt("proxyPort")
 
-		go server.StartServer(port)
-		proxy.StartProxy(proxyPort)
+		configs := spyconfigs.New()
+
+		go server.StartServer(&configs, port)
+		proxy.StartProxy(&configs, proxyPort)
 	},
 }
 

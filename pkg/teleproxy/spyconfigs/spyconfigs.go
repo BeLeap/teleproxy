@@ -9,13 +9,13 @@ import (
 )
 
 type SpyConfigs struct {
-	mu sync.Mutex;
+	mu *sync.Mutex;
 	SpyConfigs []spyconfig.SpyConfig;
 }
 
 func New() SpyConfigs {
 	return SpyConfigs{
-		mu:           sync.Mutex{},
+		mu:           &sync.Mutex{},
 		SpyConfigs: []spyconfig.SpyConfig{},
 	}
 }

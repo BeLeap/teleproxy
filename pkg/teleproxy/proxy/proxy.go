@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"beleap.dev/teleproxy/pkg/teleproxy/spyconfigs"
 )
 
 var (
@@ -18,7 +20,7 @@ func (p *proxyHandler) ServeHTTP(http.ResponseWriter, *http.Request) {
 	logger.Print("Request Recv")
 }
 
-func StartProxy(port int) {
+func StartProxy(configs *spyconfigs.SpyConfigs, port int) {
 	s := &http.Server{
 		Addr: fmt.Sprintf(":%d", port),
 		Handler: &proxyHandler {},
