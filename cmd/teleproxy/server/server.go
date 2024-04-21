@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"beleap.dev/teleproxy/pkg/teleproxy"
+	"beleap.dev/teleproxy/pkg/teleproxy/proxy"
 	"beleap.dev/teleproxy/pkg/teleproxy/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -17,7 +17,7 @@ var ServerCommand = &cobra.Command{
 		proxyPort := viper.GetInt("proxyPort")
 
 		go server.StartServer(port)
-		teleproxy.StartProxy(proxyPort)
+		proxy.StartProxy(proxyPort)
 	},
 }
 

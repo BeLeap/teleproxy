@@ -1,4 +1,4 @@
-package teleproxy
+package proxy
 
 import (
 	"fmt"
