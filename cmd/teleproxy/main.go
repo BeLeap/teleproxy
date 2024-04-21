@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
+	"beleap.dev/teleproxy/pkg/teleproxy"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -12,8 +12,8 @@ import (
 var rootCmd = &cobra.Command{
 	Use: "Teleproxy",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Hello, World!")
-		fmt.Println(viper.GetInt("port"))
+		port := viper.GetInt("port")
+		teleproxy.StartProxy(port)
 	},
 }
 
