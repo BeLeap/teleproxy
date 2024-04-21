@@ -14,7 +14,7 @@ type teleProxyServer struct {
 	pb.UnimplementedTeleProxyServer
 }
 
-func (s *teleProxyServer) Listen(empty *pb.Empty, stream pb.TeleProxy_ListenServer) error {
+func (s *teleProxyServer) Listen(request *pb.ListenRequest, stream pb.TeleProxy_ListenServer) error {
 	log.Println("[server] recv")
 	for true {
 		time.Sleep(1000)

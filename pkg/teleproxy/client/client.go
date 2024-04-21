@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func StartListen(serverAddr string) {
+func StartListen(serverAddr string, key string, value string) {
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
@@ -24,7 +24,10 @@ func StartListen(serverAddr string) {
 
 	client := pb.NewTeleProxyClient(conn)
 
-	stream, err := client.Listen(context.Background(), &pb.Empty{})
+	stream, err := client.Listen(context.Background(), &pb.ListenRequest{
+		HeaderKey: key,
+		HeaderValue: value,
+	})
 	if err != nil {
 		log.Fatalf("Failed to call client.Listen: %v", err)
 		os.Exit(1)
