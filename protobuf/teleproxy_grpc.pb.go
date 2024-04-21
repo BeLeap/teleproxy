@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TeleProxyClient interface {
-	Listen(ctx context.Context, in *Empty, opts ...grpc.CallOption) (TeleProxy_ListenClient, error)
+	Listen(ctx context.Context, in *ListenRequest, opts ...grpc.CallOption) (TeleProxy_ListenClient, error)
 }
 
 type teleProxyClient struct {
@@ -33,7 +33,7 @@ func NewTeleProxyClient(cc grpc.ClientConnInterface) TeleProxyClient {
 	return &teleProxyClient{cc}
 }
 
-func (c *teleProxyClient) Listen(ctx context.Context, in *Empty, opts ...grpc.CallOption) (TeleProxy_ListenClient, error) {
+func (c *teleProxyClient) Listen(ctx context.Context, in *ListenRequest, opts ...grpc.CallOption) (TeleProxy_ListenClient, error) {
 	stream, err := c.cc.NewStream(ctx, &TeleProxy_ServiceDesc.Streams[0], "/TeleProxy/Listen", opts...)
 	if err != nil {
 		return nil, err
@@ -69,7 +69,7 @@ func (x *teleProxyListenClient) Recv() (*Http, error) {
 // All implementations must embed UnimplementedTeleProxyServer
 // for forward compatibility
 type TeleProxyServer interface {
-	Listen(*Empty, TeleProxy_ListenServer) error
+	Listen(*ListenRequest, TeleProxy_ListenServer) error
 	mustEmbedUnimplementedTeleProxyServer()
 }
 
@@ -77,7 +77,7 @@ type TeleProxyServer interface {
 type UnimplementedTeleProxyServer struct {
 }
 
-func (UnimplementedTeleProxyServer) Listen(*Empty, TeleProxy_ListenServer) error {
+func (UnimplementedTeleProxyServer) Listen(*ListenRequest, TeleProxy_ListenServer) error {
 	return status.Errorf(codes.Unimplemented, "method Listen not implemented")
 }
 func (UnimplementedTeleProxyServer) mustEmbedUnimplementedTeleProxyServer() {}
@@ -94,7 +94,7 @@ func RegisterTeleProxyServer(s grpc.ServiceRegistrar, srv TeleProxyServer) {
 }
 
 func _TeleProxy_Listen_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(Empty)
+	m := new(ListenRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}

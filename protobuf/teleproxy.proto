@@ -1,12 +1,15 @@
 syntax = "proto3";
 option go_package = "beleap.dev/teleproxy/protobuf";
 
-message Empty {}
+message ListenRequest {
+  string header_key = 1;
+  string header_value = 2;
+}
 
 message Http {
   string method = 1;
 }
 
 service TeleProxy {
-  rpc Listen(Empty) returns (stream Http) {}
+  rpc Listen(ListenRequest) returns (stream Http) {}
 }
