@@ -18,7 +18,7 @@ func TestDumpProxyConfigsWithEmpty(t *testing.T) {
 	assert.Equal(t, result, "{\"SpyConfigs\":[]}")
 }
 
-func TestDumpProxyConfigs(t *testing.T) {
+func TestAddSpyConfigs(t *testing.T) {
 	pcs := config.New()
 	pcs.AddSpyConfigs(config.SpyConfig{
 		HeaderKey:   "Some-Header",
