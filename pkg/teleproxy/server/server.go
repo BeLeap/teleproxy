@@ -3,12 +3,17 @@ package server
 import (
 	"fmt"
 	"log"
-	"net/http"
+	"net"
+
+	"google.golang.org/grpc"
 )
 
 func StartServer(port int) {
-	log.Fatal(http.ListenAndServe(
-		fmt.Sprintf(":%d", port),
-		nil,
-	))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
+
+	grpcServer := grpc.NewServer()
+	grpcServer.Serve(lis)
 }
