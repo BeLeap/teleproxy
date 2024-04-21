@@ -1,27 +1,22 @@
-package config
+package spyconfigs
 
 import (
 	"encoding/json"
 	"log"
 	"sync"
+
+	"beleap.dev/teleproxy/pkg/teleproxy/spyconfig"
 )
-
-type SpyConfig struct {
-	HeaderKey string;
-	HeaderValue string;
-
-	To string;
-}
 
 type SpyConfigs struct {
 	mu sync.Mutex;
-	SpyConfigs []SpyConfig;
+	SpyConfigs []spyconfig.SpyConfig;
 }
 
 func New() SpyConfigs {
 	return SpyConfigs{
 		mu:           sync.Mutex{},
-		SpyConfigs: []SpyConfig{},
+		SpyConfigs: []spyconfig.SpyConfig{},
 	}
 }
 
@@ -38,7 +33,7 @@ func (c *SpyConfigs) DumpSpyConfigs() (string, error) {
 	return string(buf), nil
 }
 
-func (c *SpyConfigs) AddSpyConfigs(config SpyConfig) {
+func (c *SpyConfigs) AddSpyConfigs(config spyconfig.SpyConfig) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
