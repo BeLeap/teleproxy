@@ -11,13 +11,15 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+var logger = log.New(os.Stdout, "[client] ", log.LstdFlags | log.Lmicroseconds)
+
 func StartListen(serverAddr string, key string, value string) {
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {
-		log.Fatalf("Failed to dial grpc server: %v", err)
+		logger.Fatalf("Failed to dial grpc server: %v", err)
 		os.Exit(1)
 	}
 	defer conn.Close()
@@ -29,7 +31,7 @@ func StartListen(serverAddr string, key string, value string) {
 		HeaderValue: value,
 	})
 	if err != nil {
-		log.Fatalf("Failed to call client.Listen: %v", err)
+		logger.Fatalf("Failed to call client.Listen: %v", err)
 		os.Exit(1)
 	}
 	for true {
@@ -38,8 +40,8 @@ func StartListen(serverAddr string, key string, value string) {
 			return
 		}
 		if err != nil {
-			log.Fatalf("failed to listen: %v", err)
+			logger.Fatalf("Failed to listen: %v", err)
 		}
-		log.Printf("recv: %v", http)
+		logger.Printf("Recv: %v", http)
 	}
 }

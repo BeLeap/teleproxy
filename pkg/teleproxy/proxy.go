@@ -4,16 +4,18 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 )
 
 var (
 	_ http.Handler = &proxyHandler{}
+	logger = log.New(os.Stdout, "[proxy] ", log.LstdFlags | log.Lmicroseconds)
 )
 
 type proxyHandler struct{}
 
 func (p *proxyHandler) ServeHTTP(http.ResponseWriter, *http.Request) {
-	log.Print("request recv")
+	logger.Print("Request Recv")
 }
 
 func StartProxy(port int) {
@@ -21,5 +23,5 @@ func StartProxy(port int) {
 		Addr: fmt.Sprintf(":%d", port),
 		Handler: &proxyHandler {},
 	}
-	log.Fatal(s.ListenAndServe())
+	logger.Fatal(s.ListenAndServe())
 }
