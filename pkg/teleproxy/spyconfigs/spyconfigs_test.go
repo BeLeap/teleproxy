@@ -23,7 +23,7 @@ func TestDumpProxyConfigsWithEmpty(t *testing.T) {
 func TestAddSpyConfigs(t *testing.T) {
 	pcs := spyconfigs.New()
 
-	config := spyconfig.New("Some-Header", "SomeValue", "SomeTo")
+	config := spyconfig.New("Some-Header", "SomeValue")
 	pcs.AddSpyConfigs(config)
 	result, err := pcs.DumpSpyConfigs()
 
@@ -35,7 +35,7 @@ func TestAddSpyConfigs(t *testing.T) {
 		t,
 		result,
 		fmt.Sprintf(
-			"{\"SpyConfigs\":[{\"Id\":\"%s\",\"HeaderKey\":\"Some-Header\",\"HeaderValue\":\"SomeValue\",\"To\":\"SomeTo\"}]}",
+			"{\"SpyConfigs\":[{\"Id\":\"%s\",\"HeaderKey\":\"Some-Header\",\"HeaderValue\":\"SomeValue\"}]}",
 			config.Id,
 		),
 	)

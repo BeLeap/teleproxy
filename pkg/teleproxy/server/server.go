@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"beleap.dev/teleproxy/pkg/teleproxy/spyconfig"
 	pb "beleap.dev/teleproxy/protobuf"
 	"google.golang.org/grpc"
 )
@@ -19,6 +20,8 @@ type teleProxyServer struct {
 
 func (s *teleProxyServer) Listen(request *pb.ListenRequest, stream pb.TeleProxy_ListenServer) error {
 	logger.Println("Recv")
+	config = spyconfig.New(request.HeaderKey, request.HeaderValue)
+
 	for true {
 		time.Sleep(1000)
 		err := stream.Send(&pb.Http{

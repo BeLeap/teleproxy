@@ -11,17 +11,13 @@ type SpyConfig struct {
 
 	HeaderKey   string
 	HeaderValue string
-
-	To string
 }
 
-func New(headerKey string, headerValue string, to string) SpyConfig {
+func New(headerKey string, headerValue string) SpyConfig {
 	return SpyConfig {
 		Id: fmt.Sprint(ulid.Make()),
 
 		HeaderKey: headerKey,
 		HeaderValue: headerValue,
-
-		To: to,
 	}
 }
