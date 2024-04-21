@@ -6,26 +6,26 @@ import (
 	"sync"
 )
 
-type ProxyConfig struct {
+type SpyConfig struct {
 	HeaderKey string;
 	HeaderValue string;
 
 	To string;
 }
 
-type ProxyConfigs struct {
+type SpyConfigs struct {
 	mu sync.Mutex;
-	ProxyConfigs []ProxyConfig;
+	SpyConfigs []SpyConfig;
 }
 
-func New() ProxyConfigs {
-	return ProxyConfigs{
+func New() SpyConfigs {
+	return SpyConfigs{
 		mu:           sync.Mutex{},
-		ProxyConfigs: []ProxyConfig{},
+		SpyConfigs: []SpyConfig{},
 	}
 }
 
-func (c *ProxyConfigs) DumpProxyConfigs() (string, error) {
+func (c *SpyConfigs) DumpSpyConfigs() (string, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -38,9 +38,9 @@ func (c *ProxyConfigs) DumpProxyConfigs() (string, error) {
 	return string(buf), nil
 }
 
-func (c *ProxyConfigs) AddProxyConfigs(config ProxyConfig) {
+func (c *SpyConfigs) AddSpyConfigs(config SpyConfig) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.ProxyConfigs = append(c.ProxyConfigs, config)
+	c.SpyConfigs = append(c.SpyConfigs, config)
 }
