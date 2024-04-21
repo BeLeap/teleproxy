@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var logger = log.New(os.Stdout, "[client] ", log.LstdFlags | log.Lmicroseconds)
+var logger = log.New(os.Stdout, "[client] ", log.LstdFlags|log.Lmicroseconds)
 
 func StartListen(serverAddr string, key string, value string) {
 	opts := []grpc.DialOption{
@@ -27,7 +27,7 @@ func StartListen(serverAddr string, key string, value string) {
 	client := pb.NewTeleProxyClient(conn)
 
 	stream, err := client.Listen(context.Background(), &pb.ListenRequest{
-		HeaderKey: key,
+		HeaderKey:   key,
 		HeaderValue: value,
 	})
 	if err != nil {

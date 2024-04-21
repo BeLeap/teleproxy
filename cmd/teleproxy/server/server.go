@@ -50,4 +50,3 @@ func initConfig() {
 		os.Exit(1)
 	}
 }
-
