@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"beleap.dev/teleproxy/pkg/teleproxy"
+	"beleap.dev/teleproxy/pkg/teleproxy/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -13,7 +14,10 @@ var rootCmd = &cobra.Command{
 	Use: "Teleproxy",
 	Run: func(cmd *cobra.Command, args []string) {
 		port := viper.GetInt("port")
-		teleproxy.StartProxy(port)
+		proxyPort := viper.GetInt("proxyPort")
+
+		go server.StartServer(port)
+		teleproxy.StartProxy(proxyPort)
 	},
 }
 
@@ -24,8 +28,11 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "path for config file")
 
-	rootCmd.Flags().IntP("port", "p", 2344, "listening port")
+	rootCmd.Flags().IntP("port", "l", 2344, "listening port")
 	viper.BindPFlag("port", rootCmd.Flags().Lookup("port"))
+
+	rootCmd.Flags().IntP("proxyPort", "p", 2345, "proxing port")
+	viper.BindPFlag("proxyPort", rootCmd.Flags().Lookup("proxyPort"))
 }
 
 func initConfig() {
