@@ -38,6 +38,8 @@ func (s *teleProxyServer) Listen(request *pb.ListenRequest, stream pb.TeleProxy_
 			break
 		}
 	}
+
+	s.configs.RemoveSpyConfig(config.Id)
 	return nil
 }
 
