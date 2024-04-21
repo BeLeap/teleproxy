@@ -2,10 +2,10 @@ package server
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
-	"time"
 
 	"beleap.dev/teleproxy/pkg/teleproxy/spyconfig"
 	"beleap.dev/teleproxy/pkg/teleproxy/spyconfigs"
@@ -25,14 +25,17 @@ func (s *teleProxyServer) Listen(request *pb.ListenRequest, stream pb.TeleProxy_
 	config := spyconfig.New(request.HeaderKey, request.HeaderValue)
 	s.configs.AddSpyConfigs(config)
 
-	for true {
-		time.Sleep(1000)
+	for {
 		err := stream.Send(&pb.Http{
 			Method: "GET",
 		})
+		if err == io.EOF {
+			logger.Print("Client closed connection")
+			break
+		}
 		if err != nil {
-			logger.Fatalf("Failed to send response: %v", err)
-			return err
+			logger.Printf("Failed to send response: %v", err)
+			break
 		}
 	}
 	return nil
@@ -48,5 +51,6 @@ func StartServer(configs *spyconfigs.SpyConfigs, port int) {
 	pb.RegisterTeleProxyServer(grpcServer, &teleProxyServer{
 		configs: configs,
 	})
+	logger.Printf("Listening on %s", lis.Addr().String())
 	grpcServer.Serve(lis)
 }

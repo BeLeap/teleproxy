@@ -34,10 +34,11 @@ func StartListen(serverAddr string, key string, value string) {
 		logger.Fatalf("Failed to call client.Listen: %v", err)
 		os.Exit(1)
 	}
-	for true {
+
+	for {
 		http, err := stream.Recv()
 		if err == io.EOF {
-			return
+			break
 		}
 		if err != nil {
 			logger.Fatalf("Failed to listen: %v", err)
