@@ -24,7 +24,7 @@ func TestAddSpyConfigs(t *testing.T) {
 	pcs := spyconfigs.New()
 
 	config := spyconfig.New("Some-Header", "SomeValue")
-	pcs.AddSpyConfigs(config)
+	pcs.AddSpyConfig(config)
 	result, err := pcs.DumpSpyConfigs()
 
 	if err != nil {

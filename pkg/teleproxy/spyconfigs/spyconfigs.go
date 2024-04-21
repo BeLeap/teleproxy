@@ -33,7 +33,7 @@ func (c *SpyConfigs) DumpSpyConfigs() (string, error) {
 	return string(buf), nil
 }
 
-func (c *SpyConfigs) AddSpyConfigs(config spyconfig.SpyConfig) {
+func (c *SpyConfigs) AddSpyConfig(config spyconfig.SpyConfig) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

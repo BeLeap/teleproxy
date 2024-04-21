@@ -23,7 +23,7 @@ type teleProxyServer struct {
 func (s *teleProxyServer) Listen(request *pb.ListenRequest, stream pb.TeleProxy_ListenServer) error {
 	logger.Println("Recv")
 	config := spyconfig.New(request.HeaderKey, request.HeaderValue)
-	s.configs.AddSpyConfigs(config)
+	s.configs.AddSpyConfig(config)
 
 	for {
 		err := stream.Send(&pb.Http{
