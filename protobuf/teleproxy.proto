@@ -2,15 +2,19 @@ syntax = "proto3";
 option go_package = "beleap.dev/teleproxy/protobuf";
 
 message ListenRequest {
-  string header_key = 1;
-  string header_value = 2;
+  string api_key = 1;
+
+  string header_key = 2;
+  string header_value = 3;
 }
 
 message Http {
   string method = 1;
 }
 
-message DumpRequest {}
+message DumpRequest {
+  string api_key = 1;
+}
 message DumpResponse {
   string dump = 1;
 }
