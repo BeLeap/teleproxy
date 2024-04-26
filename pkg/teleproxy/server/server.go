@@ -70,7 +70,7 @@ func (s *teleProxyServer) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.Du
 	return resp, nil
 }
 
-func StartServer(configs *spyconfigs.SpyConfigs, port int) {
+func Start(configs *spyconfigs.SpyConfigs, port int) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		logger.Fatalf("Failed to start server: %v", err)

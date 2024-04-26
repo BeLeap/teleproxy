@@ -1,1 +1,2 @@
 port: 2344
+target: http://localhost:4000

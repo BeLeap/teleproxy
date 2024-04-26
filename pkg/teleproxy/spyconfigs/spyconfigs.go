@@ -2,6 +2,7 @@ package spyconfigs
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"slices"
 	"sync"
@@ -48,4 +49,22 @@ func (c *SpyConfigs) RemoveSpyConfig(id string) {
 	c.SpyConfigs = slices.DeleteFunc(c.SpyConfigs, func(config spyconfig.SpyConfig) bool {
 		return config.Id == id
 	})
+}
+
+var NoMatchingError = errors.New("No Matching Result")
+
+func (c *SpyConfigs) GetMatching(header map[string][]string) (*string, error) {
+	for key, values := range header {
+		for _, config := range c.SpyConfigs {
+			if config.HeaderKey == key {
+				for _, value := range values {
+					if config.HeaderValue == value {
+						return &config.Id, nil
+					}
+				}
+			}
+		}
+	}
+
+	return nil, NoMatchingError
 }

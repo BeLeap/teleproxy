@@ -15,12 +15,13 @@ var ServerCommand = &cobra.Command{
 	Use: "server",
 	Run: func(cmd *cobra.Command, args []string) {
 		port := viper.GetInt("port")
+		target := viper.GetString("target")
 		proxyPort := viper.GetInt("proxyPort")
 
 		configs := spyconfigs.New()
 
-		go server.StartServer(&configs, port)
-		proxy.StartProxy(&configs, proxyPort)
+		go server.Start(&configs, port)
+		proxy.Start(&configs, proxyPort, target)
 	},
 }
 
@@ -33,6 +34,9 @@ func init() {
 
 	ServerCommand.Flags().IntP("port", "l", 2344, "listening port")
 	viper.BindPFlag("port", ServerCommand.Flags().Lookup("port"))
+
+	ServerCommand.Flags().StringP("target", "t", "http://localhost:4000", "target")
+	viper.BindPFlag("target", ServerCommand.Flags().Lookup("target"))
 
 	ServerCommand.Flags().IntP("proxyPort", "p", 2345, "proxing port")
 	viper.BindPFlag("proxyPort", ServerCommand.Flags().Lookup("proxyPort"))
