@@ -10,6 +10,12 @@ message Http {
   string method = 1;
 }
 
+message DumpRequest {}
+message DumpResponse {
+  string dump = 1;
+}
+
 service TeleProxy {
   rpc Listen(ListenRequest) returns (stream Http) {}
+  rpc Dump(DumpRequest) returns (DumpResponse) {}
 }

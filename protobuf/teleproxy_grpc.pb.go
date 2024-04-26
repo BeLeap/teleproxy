@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TeleProxyClient interface {
 	Listen(ctx context.Context, in *ListenRequest, opts ...grpc.CallOption) (TeleProxy_ListenClient, error)
+	Dump(ctx context.Context, in *DumpRequest, opts ...grpc.CallOption) (*DumpResponse, error)
 }
 
 type teleProxyClient struct {
@@ -65,11 +66,21 @@ func (x *teleProxyListenClient) Recv() (*Http, error) {
 	return m, nil
 }
 
+func (c *teleProxyClient) Dump(ctx context.Context, in *DumpRequest, opts ...grpc.CallOption) (*DumpResponse, error) {
+	out := new(DumpResponse)
+	err := c.cc.Invoke(ctx, "/TeleProxy/Dump", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TeleProxyServer is the server API for TeleProxy service.
 // All implementations must embed UnimplementedTeleProxyServer
 // for forward compatibility
 type TeleProxyServer interface {
 	Listen(*ListenRequest, TeleProxy_ListenServer) error
+	Dump(context.Context, *DumpRequest) (*DumpResponse, error)
 	mustEmbedUnimplementedTeleProxyServer()
 }
 
@@ -79,6 +90,9 @@ type UnimplementedTeleProxyServer struct {
 
 func (UnimplementedTeleProxyServer) Listen(*ListenRequest, TeleProxy_ListenServer) error {
 	return status.Errorf(codes.Unimplemented, "method Listen not implemented")
+}
+func (UnimplementedTeleProxyServer) Dump(context.Context, *DumpRequest) (*DumpResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Dump not implemented")
 }
 func (UnimplementedTeleProxyServer) mustEmbedUnimplementedTeleProxyServer() {}
 
@@ -114,13 +128,36 @@ func (x *teleProxyListenServer) Send(m *Http) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _TeleProxy_Dump_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DumpRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TeleProxyServer).Dump(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/TeleProxy/Dump",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TeleProxyServer).Dump(ctx, req.(*DumpRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TeleProxy_ServiceDesc is the grpc.ServiceDesc for TeleProxy service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var TeleProxy_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "TeleProxy",
 	HandlerType: (*TeleProxyServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Dump",
+			Handler:    _TeleProxy_Dump_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "Listen",

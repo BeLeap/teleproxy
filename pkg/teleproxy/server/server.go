@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -41,6 +42,17 @@ func (s *teleProxyServer) Listen(request *pb.ListenRequest, stream pb.TeleProxy_
 
 	s.configs.RemoveSpyConfig(config.Id)
 	return nil
+}
+func (s *teleProxyServer) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpResponse, error) {
+	res, err := s.configs.DumpSpyConfigs()
+	if err != nil {
+		logger.Printf("Failed to dump spy configs: %v", err)
+		return nil, err
+	}
+	resp := &pb.DumpResponse{
+		Dump: res,
+	}
+	return resp, nil
 }
 
 func StartServer(configs *spyconfigs.SpyConfigs, port int) {
