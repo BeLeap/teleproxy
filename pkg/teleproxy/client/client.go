@@ -13,7 +13,7 @@ import (
 
 var logger = log.New(os.Stdout, "[client] ", log.LstdFlags|log.Lmicroseconds)
 
-func StartListen(serverAddr string, key string, value string) {
+func StartListen(serverAddr string, apikey string, key string, value string) {
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
@@ -27,6 +27,8 @@ func StartListen(serverAddr string, key string, value string) {
 	client := pb.NewTeleProxyClient(conn)
 
 	stream, err := client.Listen(context.Background(), &pb.ListenRequest{
+		ApiKey: apikey,
+
 		HeaderKey:   key,
 		HeaderValue: value,
 	})
@@ -47,7 +49,7 @@ func StartListen(serverAddr string, key string, value string) {
 	}
 }
 
-func Dump(serverAddr string) {
+func Dump(serverAddr string, apikey string) {
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
@@ -60,7 +62,9 @@ func Dump(serverAddr string) {
 
 	client := pb.NewTeleProxyClient(conn)
 
-	resp, err := client.Dump(context.Background(), &pb.DumpRequest{})
+	resp, err := client.Dump(context.Background(), &pb.DumpRequest{
+		ApiKey: apikey,
+	})
 	if err != nil {
 		logger.Fatalf("Failed to call client.Dump: %v", err)
 	}
