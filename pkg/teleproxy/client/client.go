@@ -46,3 +46,24 @@ func StartListen(serverAddr string, key string, value string) {
 		logger.Printf("Recv: %v", http)
 	}
 }
+
+func Dump(serverAddr string) {
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	}
+	conn, err := grpc.Dial(serverAddr, opts...)
+	if err != nil {
+		logger.Fatalf("Failed to dial grpc server: %v", err)
+		os.Exit(1)
+	}
+	defer conn.Close()
+
+	client := pb.NewTeleProxyClient(conn)
+
+	resp, err := client.Dump(context.Background(), &pb.DumpRequest{})
+	if err != nil {
+		logger.Fatalf("Failed to call client.Dump: %v", err)
+	}
+
+	logger.Print(resp)
+}
