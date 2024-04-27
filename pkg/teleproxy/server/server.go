@@ -58,6 +58,35 @@ func (s *teleProxyServer) Deregister(ctx context.Context, req *pb.DeregisterRequ
 	return &pb.DeregisterResponse{}, nil
 }
 
+func (s *teleProxyServer) Listen(stream pb.TeleProxy_ListenServer) error {
+	initResp, err := stream.Recv()
+	if err != nil {
+		log.Printf("Failed to get request: %v", err)
+		return status.Error(codes.Internal, "")
+	}
+	if initResp.ApiKey != apiKey {
+		log.Print("Not matching api key")
+		return status.Error(codes.Unauthenticated, "Not matching api key")
+	}
+
+	for {
+		executeChan := make(chan bool)
+		s.mu.Lock()
+		s.streamMap[initResp.Id] = executeChan
+		s.mu.Unlock()
+
+		<-executeChan
+		stream.Send(&pb.ListenResponse{
+			Method: "GET",
+		})
+		resp, err := stream.Recv()
+		if err != nil {
+			log.Printf("Failed to get response: %v", err)
+		}
+		logger.Print(resp)
+	}
+}
+
 func (s *teleProxyServer) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpResponse, error) {
 	if req.ApiKey != apiKey {
 		logger.Print("Not matching api key")

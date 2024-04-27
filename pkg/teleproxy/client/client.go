@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"io"
 	"log"
 	"os"
 
@@ -39,22 +40,30 @@ func StartListen(serverAddr string, apikey string, key string, value string) {
 		Id:     config.Id,
 	})
 
-	// stream, err := client.Listen(context.Background(), &pb.ListenRequest{ ApiKey: apikey, HeaderKey: "dummy", HeaderValue: "dummy" })
-	// if err != nil {
-	// 	logger.Fatalf("Failed to call client.Listen: %v", err)
-	// 	os.Exit(1)
-	// }
-	//
-	// for {
-	// 	http, err := stream.Recv()
-	// 	if err == io.EOF {
-	// 		break
-	// 	}
-	// 	if err != nil {
-	// 		logger.Fatalf("Failed to listen: %v", err)
-	// 	}
-	// 	logger.Printf("Recv: %v", http)
-	// }
+	stream, err := client.Listen(context.Background())
+	if err != nil {
+		logger.Fatalf("Failed to call client.Listen: %v", err)
+		os.Exit(1)
+	}
+	stream.Send(&pb.ListenRequest{
+		ApiKey: apikey,
+		Id: config.Id,
+	})
+
+	for {
+		http, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			logger.Fatalf("Failed to listen: %v", err)
+		}
+		logger.Printf("Recv: %v", http)
+		stream.Send(&pb.ListenRequest{
+			ApiKey: apikey,
+			Id: config.Id,
+		})
+	}
 }
 
 func Dump(serverAddr string, apikey string) {
