@@ -79,11 +79,10 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 		appendHostToXForwardHeader(req.Header, clientIP)
 	}
 
-	logger.Printf("Match result: %v", matching)
-	logger.Printf("%v", err)
-
 	var resp *http.Response
 	if !errors.Is(err, spyconfigs.NoMatchingError) {
+		logger.Printf("Match result: %v", matching)
+
 		p.idChan <- matching
 		httpRequest, err := httprequest.FromHttpRequest(req)
 		if err != nil {
