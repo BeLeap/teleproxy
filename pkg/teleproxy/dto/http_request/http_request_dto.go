@@ -1,4 +1,4 @@
-package http_request_dto
+package http_request
 
 import (
 	"bytes"

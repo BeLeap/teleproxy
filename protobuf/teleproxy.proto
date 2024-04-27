@@ -16,12 +16,17 @@ message DeregisterRequest {
 }
 message DeregisterResponse {}
 
+message HeaderValues { repeated string values = 1; }
 message ListenRequest {
   string api_key = 1;
 
   string id = 2;
+
+  string status = 3;
+  string proto = 4;
+  map<string, HeaderValues> header = 5;
+  bytes body = 6;
 }
-message HeaderValues { repeated string values = 1; }
 message ListenResponse {
   string method = 1;
   string url = 2;
