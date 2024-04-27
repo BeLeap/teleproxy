@@ -7,9 +7,7 @@ message RegisterRequest {
   string header_key = 2;
   string header_value = 3;
 }
-message RegisterResponse {
-  string id = 1;
-}
+message RegisterResponse { string id = 1; }
 
 message DeregisterRequest {
   string api_key = 1;
@@ -18,19 +16,11 @@ message DeregisterRequest {
 }
 message DeregisterResponse {}
 
-message HttpResponse {
-  string api_key = 1;
-}
-message HttpRequest {
-  string method = 1;
-}
+message HttpResponse { string api_key = 1; }
+message HttpRequest { string method = 1; }
 
-message DumpRequest {
-  string api_key = 1;
-}
-message DumpResponse {
-  string dump = 1;
-}
+message DumpRequest { string api_key = 1; }
+message DumpResponse { string dump = 1; }
 
 service TeleProxy {
   rpc Register(RegisterRequest) returns (RegisterResponse) {}
