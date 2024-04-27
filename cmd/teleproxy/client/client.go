@@ -17,7 +17,6 @@ var ClientCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		wg := sync.WaitGroup{}
 		ctx, cancel := context.WithCancel(context.Background())
-		wg.Add(1)
 		go client.StartListen(ctx, &wg, addr, apikey, key, value, target)
 
 		quit := make(chan os.Signal, 1)

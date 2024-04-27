@@ -40,6 +40,15 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 		logger.Fatalf("Failed to call client.Register: %v", err)
 	}
 	logger.Printf("Registered with Id: %s", config.Id)
+	wg.Add(1)
+	defer func() {
+		client.Deregister(context.Background(), &pb.DeregisterRequest{
+			ApiKey: apikey,
+			Id:     config.Id,
+		})
+		logger.Printf("Deregistered with Id: %s", config.Id)
+		wg.Done()
+	}()
 
 	stream, err := client.Listen(ctx)
 	if err != nil {
@@ -56,12 +65,6 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 	for {
 		select {
 		case <-ctx.Done():
-			client.Deregister(context.Background(), &pb.DeregisterRequest{
-				ApiKey: apikey,
-				Id:     config.Id,
-			})
-			logger.Printf("Deregistered with Id: %s", config.Id)
-			wg.Done()
 			return
 		default:
 			listenResp, err := stream.Recv()
@@ -69,7 +72,8 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 				break
 			}
 			if err != nil {
-				logger.Fatalf("Failed to listen: %v", err)
+				logger.Printf("Failed to listen: %v", err)
+				return
 			}
 
 			httpRequestDto, err := httprequest.FromPb(listenResp)
