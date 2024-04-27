@@ -50,7 +50,7 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 	for {
 		select {
 		case <-ctx.Done():
-			client.Deregister(ctx, &pb.DeregisterRequest{
+			client.Deregister(context.Background(), &pb.DeregisterRequest{
 				ApiKey: apikey,
 				Id:     config.Id,
 			})
