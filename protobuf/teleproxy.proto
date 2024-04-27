@@ -16,7 +16,11 @@ message DeregisterRequest {
 }
 message DeregisterResponse {}
 
-message ListenRequest { string api_key = 1; }
+message ListenRequest {
+  string api_key = 1;
+
+  string id = 2;
+}
 message ListenResponse { string method = 1; }
 
 message DumpRequest { string api_key = 1; }
