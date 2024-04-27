@@ -1,7 +1,6 @@
 package client
 
 import (
-	"bytes"
 	"context"
 	"io"
 	"log"
@@ -10,7 +9,8 @@ import (
 	"os"
 	"sync"
 
-	http_request_dto "beleap.dev/teleproxy/pkg/teleproxy/dto"
+	"beleap.dev/teleproxy/pkg/teleproxy/dto/httprequest"
+	"beleap.dev/teleproxy/pkg/teleproxy/dto/httpresponse"
 	pb "beleap.dev/teleproxy/protobuf"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -72,7 +72,7 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 				logger.Printf("Failed to listen: %v", err)
 			}
 
-			httpRequestDto, err := http_request_dto.FromPb(listenResp)
+			httpRequestDto, err := httprequest.FromPb(listenResp)
 			if err != nil {
 				stream.Send(&pb.ListenRequest{
 					ApiKey: apikey,
@@ -112,6 +112,7 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 			}
 
 			logger.Printf("Resp: %v", resp)
+			httpresponse.FromHttpResponse(resp)
 			stream.Send(&pb.ListenRequest{
 				ApiKey: apikey,
 				Id:     config.Id,

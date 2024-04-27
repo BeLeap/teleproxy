@@ -1,4 +1,4 @@
-package http_request
+package httprequest
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
+	headervalues "beleap.dev/teleproxy/pkg/teleproxy/dto/header_values"
 	pb "beleap.dev/teleproxy/protobuf"
 )
 
@@ -30,17 +31,10 @@ func FromHttpRequest(req *http.Request) (*HttpRequestDto, error) {
 }
 
 func (r *HttpRequestDto) ToPb() pb.ListenResponse {
-	headers := map[string]*pb.HeaderValues{}
-	for k, v := range r.Headers {
-		headers[k] = &pb.HeaderValues{
-			Values: v,
-		}
-	}
-
 	return pb.ListenResponse{
 		Method:  r.Method,
 		Url:     r.Url.String(),
-		Headers: headers,
+		Headers: headervalues.ToPb(r.Headers),
 		Body:    r.Body,
 	}
 }
@@ -51,15 +45,10 @@ func FromPb(in *pb.ListenResponse) (*HttpRequestDto, error) {
 		return nil, err
 	}
 
-	headers := map[string][]string{}
-	for k, v := range in.Headers {
-		headers[k] = v.Values
-	}
-
 	return &HttpRequestDto{
 		Method:  in.Method,
 		Url:     url,
-		Headers: headers,
+		Headers: headervalues.FromPb(in.Headers),
 		Body:    in.Body,
 	}, nil
 }
