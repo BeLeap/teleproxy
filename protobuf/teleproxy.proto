@@ -21,9 +21,10 @@ message ListenRequest {
 
   string id = 2;
 }
+message HeaderValues { repeated string values = 1; }
 message ListenResponse {
   string method = 1;
-  string url = 2;
+  map<string, HeaderValues> headers = 2;
   bytes body = 3;
 }
 
