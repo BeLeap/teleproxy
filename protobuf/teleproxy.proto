@@ -1,14 +1,29 @@
 syntax = "proto3";
 option go_package = "beleap.dev/teleproxy/protobuf";
 
-message ListenRequest {
+message RegisterRequest {
   string api_key = 1;
 
   string header_key = 2;
   string header_value = 3;
 }
+message RegisterResponse {
+  string id = 1;
+}
 
-message Http {
+message DeregisterRequest {
+  string api_key = 1;
+
+  string id = 2;
+}
+message DeregisterResponse {}
+
+message HttpResponse {
+  string api_key = 1;
+
+  string id = 2;
+}
+message HttpRequest {
   string method = 1;
 }
 
@@ -20,6 +35,8 @@ message DumpResponse {
 }
 
 service TeleProxy {
-  rpc Listen(ListenRequest) returns (stream Http) {}
+  rpc Register(RegisterRequest) returns (RegisterResponse) {}
+  rpc Listen(stream HttpResponse) returns (stream HttpRequest) {}
+  rpc Deregister(DeregisterRequest) returns (DeregisterResponse) {}
   rpc Dump(DumpRequest) returns (DumpResponse) {}
 }

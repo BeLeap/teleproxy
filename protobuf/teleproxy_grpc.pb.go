@@ -22,7 +22,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TeleProxyClient interface {
-	Listen(ctx context.Context, in *ListenRequest, opts ...grpc.CallOption) (TeleProxy_ListenClient, error)
+	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
+	Listen(ctx context.Context, opts ...grpc.CallOption) (TeleProxy_ListenClient, error)
+	Deregister(ctx context.Context, in *DeregisterRequest, opts ...grpc.CallOption) (*DeregisterResponse, error)
 	Dump(ctx context.Context, in *DumpRequest, opts ...grpc.CallOption) (*DumpResponse, error)
 }
 
@@ -34,23 +36,27 @@ func NewTeleProxyClient(cc grpc.ClientConnInterface) TeleProxyClient {
 	return &teleProxyClient{cc}
 }
 
-func (c *teleProxyClient) Listen(ctx context.Context, in *ListenRequest, opts ...grpc.CallOption) (TeleProxy_ListenClient, error) {
+func (c *teleProxyClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error) {
+	out := new(RegisterResponse)
+	err := c.cc.Invoke(ctx, "/TeleProxy/Register", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *teleProxyClient) Listen(ctx context.Context, opts ...grpc.CallOption) (TeleProxy_ListenClient, error) {
 	stream, err := c.cc.NewStream(ctx, &TeleProxy_ServiceDesc.Streams[0], "/TeleProxy/Listen", opts...)
 	if err != nil {
 		return nil, err
 	}
 	x := &teleProxyListenClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
 	return x, nil
 }
 
 type TeleProxy_ListenClient interface {
-	Recv() (*Http, error)
+	Send(*HttpResponse) error
+	Recv() (*HttpRequest, error)
 	grpc.ClientStream
 }
 
@@ -58,12 +64,25 @@ type teleProxyListenClient struct {
 	grpc.ClientStream
 }
 
-func (x *teleProxyListenClient) Recv() (*Http, error) {
-	m := new(Http)
+func (x *teleProxyListenClient) Send(m *HttpResponse) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *teleProxyListenClient) Recv() (*HttpRequest, error) {
+	m := new(HttpRequest)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
+}
+
+func (c *teleProxyClient) Deregister(ctx context.Context, in *DeregisterRequest, opts ...grpc.CallOption) (*DeregisterResponse, error) {
+	out := new(DeregisterResponse)
+	err := c.cc.Invoke(ctx, "/TeleProxy/Deregister", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *teleProxyClient) Dump(ctx context.Context, in *DumpRequest, opts ...grpc.CallOption) (*DumpResponse, error) {
@@ -79,7 +98,9 @@ func (c *teleProxyClient) Dump(ctx context.Context, in *DumpRequest, opts ...grp
 // All implementations must embed UnimplementedTeleProxyServer
 // for forward compatibility
 type TeleProxyServer interface {
-	Listen(*ListenRequest, TeleProxy_ListenServer) error
+	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
+	Listen(TeleProxy_ListenServer) error
+	Deregister(context.Context, *DeregisterRequest) (*DeregisterResponse, error)
 	Dump(context.Context, *DumpRequest) (*DumpResponse, error)
 	mustEmbedUnimplementedTeleProxyServer()
 }
@@ -88,8 +109,14 @@ type TeleProxyServer interface {
 type UnimplementedTeleProxyServer struct {
 }
 
-func (UnimplementedTeleProxyServer) Listen(*ListenRequest, TeleProxy_ListenServer) error {
+func (UnimplementedTeleProxyServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
+}
+func (UnimplementedTeleProxyServer) Listen(TeleProxy_ListenServer) error {
 	return status.Errorf(codes.Unimplemented, "method Listen not implemented")
+}
+func (UnimplementedTeleProxyServer) Deregister(context.Context, *DeregisterRequest) (*DeregisterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Deregister not implemented")
 }
 func (UnimplementedTeleProxyServer) Dump(context.Context, *DumpRequest) (*DumpResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Dump not implemented")
@@ -107,16 +134,31 @@ func RegisterTeleProxyServer(s grpc.ServiceRegistrar, srv TeleProxyServer) {
 	s.RegisterService(&TeleProxy_ServiceDesc, srv)
 }
 
-func _TeleProxy_Listen_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(ListenRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _TeleProxy_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(TeleProxyServer).Listen(m, &teleProxyListenServer{stream})
+	if interceptor == nil {
+		return srv.(TeleProxyServer).Register(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/TeleProxy/Register",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TeleProxyServer).Register(ctx, req.(*RegisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TeleProxy_Listen_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(TeleProxyServer).Listen(&teleProxyListenServer{stream})
 }
 
 type TeleProxy_ListenServer interface {
-	Send(*Http) error
+	Send(*HttpRequest) error
+	Recv() (*HttpResponse, error)
 	grpc.ServerStream
 }
 
@@ -124,8 +166,34 @@ type teleProxyListenServer struct {
 	grpc.ServerStream
 }
 
-func (x *teleProxyListenServer) Send(m *Http) error {
+func (x *teleProxyListenServer) Send(m *HttpRequest) error {
 	return x.ServerStream.SendMsg(m)
+}
+
+func (x *teleProxyListenServer) Recv() (*HttpResponse, error) {
+	m := new(HttpResponse)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _TeleProxy_Deregister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeregisterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TeleProxyServer).Deregister(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/TeleProxy/Deregister",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TeleProxyServer).Deregister(ctx, req.(*DeregisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _TeleProxy_Dump_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -154,6 +222,14 @@ var TeleProxy_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*TeleProxyServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "Register",
+			Handler:    _TeleProxy_Register_Handler,
+		},
+		{
+			MethodName: "Deregister",
+			Handler:    _TeleProxy_Deregister_Handler,
+		},
+		{
 			MethodName: "Dump",
 			Handler:    _TeleProxy_Dump_Handler,
 		},
@@ -163,6 +239,7 @@ var TeleProxy_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "Listen",
 			Handler:       _TeleProxy_Listen_Handler,
 			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "protobuf/teleproxy.proto",
