@@ -59,6 +59,8 @@ func appendHostToXForwardHeader(header http.Header, host string) {
 type proxyHandler struct {
 	target     *url.URL
 	spyconfigs *spyconfigs.SpyConfigs
+
+	idChan chan string
 }
 
 func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
@@ -74,6 +76,10 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 	}
 
 	logger.Printf("Match result: %v", matching)
+
+	if matching != nil {
+		p.idChan <- *matching
+	}
 
 	var resp *http.Response
 	client := &http.Client{}
@@ -93,7 +99,7 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 	io.Copy(wr, resp.Body)
 }
 
-func Start(configs *spyconfigs.SpyConfigs, port int, targetRaw string) {
+func Start(idChan chan string, configs *spyconfigs.SpyConfigs, port int, targetRaw string) {
 	logger.Print(targetRaw)
 	target, err := url.Parse(targetRaw)
 	if err != nil {
@@ -105,6 +111,7 @@ func Start(configs *spyconfigs.SpyConfigs, port int, targetRaw string) {
 		Handler: &proxyHandler{
 			target:     target,
 			spyconfigs: configs,
+			idChan:     idChan,
 		},
 	}
 	logger.Printf("Listening on %s", s.Addr)

@@ -1,8 +1,8 @@
 package client
 
 import (
-	"beleap.dev/teleproxy/pkg/teleproxy/client"
 	"beleap.dev/teleproxy/cmd/teleproxy/client/dump"
+	"beleap.dev/teleproxy/pkg/teleproxy/client"
 	"github.com/spf13/cobra"
 )
 

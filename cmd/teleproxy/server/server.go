@@ -2,6 +2,7 @@ package server
 
 import (
 	"log"
+	"net/http"
 	"os"
 
 	"beleap.dev/teleproxy/pkg/teleproxy/proxy"
@@ -20,8 +21,12 @@ var ServerCommand = &cobra.Command{
 
 		configs := spyconfigs.New()
 
-		go server.Start(&configs, port)
-		proxy.Start(&configs, proxyPort, target)
+		idChan := make(chan string)
+		requestChan := make(chan http.Request)
+		responseWriterChan := make(chan http.ResponseWriter)
+
+		go server.Start(idChan, requestChan, responseWriterChan, &configs, port)
+		proxy.Start(idChan, &configs, proxyPort, target)
 	},
 }
 

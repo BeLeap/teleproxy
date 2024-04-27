@@ -14,10 +14,10 @@ type SpyConfig struct {
 }
 
 func New(headerKey string, headerValue string) SpyConfig {
-	return SpyConfig {
+	return SpyConfig{
 		Id: fmt.Sprint(ulid.Make()),
 
-		HeaderKey: headerKey,
+		HeaderKey:   headerKey,
 		HeaderValue: headerValue,
 	}
 }

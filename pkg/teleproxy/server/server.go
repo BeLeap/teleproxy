@@ -6,7 +6,9 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/http"
 	"os"
+	"sync"
 
 	"beleap.dev/teleproxy/pkg/teleproxy/spyconfig"
 	"beleap.dev/teleproxy/pkg/teleproxy/spyconfigs"
@@ -24,6 +26,12 @@ var (
 type teleProxyServer struct {
 	pb.UnimplementedTeleProxyServer
 	configs *spyconfigs.SpyConfigs
+
+	requestChan        chan http.Request
+	responseWriterChan chan http.ResponseWriter
+
+	streamMap map[string]chan bool
+	mu        sync.Mutex
 }
 
 func (s *teleProxyServer) Listen(req *pb.ListenRequest, stream pb.TeleProxy_ListenServer) error {
@@ -32,11 +40,17 @@ func (s *teleProxyServer) Listen(req *pb.ListenRequest, stream pb.TeleProxy_List
 		return status.Error(codes.Unauthenticated, "Not matching api key")
 	}
 
-	logger.Println("Recv")
 	config := spyconfig.New(req.HeaderKey, req.HeaderValue)
 	s.configs.AddSpyConfig(config)
 
 	for {
+		executeChan := make(chan bool)
+
+		s.mu.Lock()
+		s.streamMap[config.Id] = executeChan
+		s.mu.Unlock()
+		
+		<- executeChan
 		err := stream.Send(&pb.Http{
 			Method: "GET",
 		})
@@ -70,16 +84,24 @@ func (s *teleProxyServer) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.Du
 	return resp, nil
 }
 
-func Start(configs *spyconfigs.SpyConfigs, port int) {
+func Start(idChan chan string, requestChan chan http.Request, responseWriterChan chan http.ResponseWriter, configs *spyconfigs.SpyConfigs, port int) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		logger.Fatalf("Failed to start server: %v", err)
 	}
 
 	grpcServer := grpc.NewServer()
-	pb.RegisterTeleProxyServer(grpcServer, &teleProxyServer{
+
+	serv := &teleProxyServer{
 		configs: configs,
-	})
+		streamMap: map[string](chan bool){},
+	}
+	pb.RegisterTeleProxyServer(grpcServer, serv)
 	logger.Printf("Listening on %s", lis.Addr().String())
-	grpcServer.Serve(lis)
+	go grpcServer.Serve(lis)
+
+	for {
+		id := <-idChan
+		serv.streamMap[id] <- true
+	}
 }
