@@ -68,3 +68,10 @@ func (c *SpyConfigs) GetMatching(header map[string][]string) (string, error) {
 
 	return "", NoMatchingError
 }
+
+func (c *SpyConfigs) FlushSpyConfigs() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.SpyConfigs = []spyconfig.SpyConfig{}
+}

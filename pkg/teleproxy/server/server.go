@@ -105,6 +105,16 @@ func (s *teleProxyServer) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.Du
 	return resp, nil
 }
 
+func (s *teleProxyServer) Flush(ctx context.Context, req *pb.FlushRequest) (*pb.FlushResponse, error) {
+	if req.ApiKey != apiKey {
+		logger.Print("Not matching api key")
+		return nil, status.Error(codes.Unauthenticated, "Not matching api key")
+	}
+
+	s.configs.FlushSpyConfigs()
+	return &pb.FlushResponse{}, nil
+}
+
 func Start(idChan chan string, requestChan chan *httprequest.HttpRequestDto, responseChan chan *httpresponse.HttpResponseDto, configs *spyconfigs.SpyConfigs, port int) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
