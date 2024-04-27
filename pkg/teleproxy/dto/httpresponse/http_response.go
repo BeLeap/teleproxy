@@ -32,11 +32,11 @@ func FromHttpResponse(in *http.Response) (*HttpResponseDto, error) {
 func (d *HttpResponseDto) ToPb(apiKey string, id string) *pb.ListenRequest {
 	return &pb.ListenRequest{
 		ApiKey: apiKey,
-		Id: id,
+		Id:     id,
 
 		Status: d.Status,
-		Proto: d.Proto,
+		Proto:  d.Proto,
 		Header: headervalues.ToPb(d.Header),
-		Body: d.Body,
+		Body:   d.Body,
 	}
 }

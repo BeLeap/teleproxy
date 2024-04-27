@@ -11,10 +11,10 @@ import (
 )
 
 type HttpRequestDto struct {
-	Method  string
-	Url     *url.URL
+	Method string
+	Url    *url.URL
 	Header map[string][]string
-	Body    []byte
+	Body   []byte
 }
 
 func FromHttpRequest(req *http.Request) (*HttpRequestDto, error) {
@@ -23,19 +23,19 @@ func FromHttpRequest(req *http.Request) (*HttpRequestDto, error) {
 		return nil, err
 	}
 	return &HttpRequestDto{
-		Method:  req.Method,
-		Url:     req.URL,
+		Method: req.Method,
+		Url:    req.URL,
 		Header: req.Header,
-		Body:    b,
+		Body:   b,
 	}, nil
 }
 
 func (r *HttpRequestDto) ToPb() pb.ListenResponse {
 	return pb.ListenResponse{
-		Method:  r.Method,
-		Url:     r.Url.String(),
+		Method: r.Method,
+		Url:    r.Url.String(),
 		Header: headervalues.ToPb(r.Header),
-		Body:    r.Body,
+		Body:   r.Body,
 	}
 }
 
@@ -46,10 +46,10 @@ func FromPb(in *pb.ListenResponse) (*HttpRequestDto, error) {
 	}
 
 	return &HttpRequestDto{
-		Method:  in.Method,
-		Url:     url,
+		Method: in.Method,
+		Url:    url,
 		Header: headervalues.FromPb(in.Header),
-		Body:    in.Body,
+		Body:   in.Body,
 	}, nil
 }
 
