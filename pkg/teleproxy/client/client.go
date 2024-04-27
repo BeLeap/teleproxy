@@ -98,7 +98,7 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 					Id:     config.Id,
 				})
 				stream.CloseSend()
-				log.Fatalf("Failed to parse target info: %v", err)
+				logger.Fatalf("Failed to parse target info: %v", err)
 			}
 
 			resp, err := httpClient.Do(httpReq)
@@ -108,7 +108,7 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 					Id:     config.Id,
 				})
 				stream.CloseSend()
-				log.Fatalf("Failed to handle request: %v", err)
+				logger.Fatalf("Failed to handle request: %v", err)
 			}
 
 			logger.Printf("Resp: %v", resp)
@@ -119,7 +119,7 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 					Id:     config.Id,
 				})
 				stream.CloseSend()
-				log.Fatalf("Failed to handle request: %v", err)
+				logger.Fatalf("Failed to handle request: %v", err)
 			}
 
 			stream.Send(httpResponse.ToPb(apikey, config.Id))
