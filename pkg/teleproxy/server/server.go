@@ -49,8 +49,8 @@ func (s *teleProxyServer) Listen(req *pb.ListenRequest, stream pb.TeleProxy_List
 		s.mu.Lock()
 		s.streamMap[config.Id] = executeChan
 		s.mu.Unlock()
-		
-		<- executeChan
+
+		<-executeChan
 		err := stream.Send(&pb.Http{
 			Method: "GET",
 		})
@@ -67,6 +67,7 @@ func (s *teleProxyServer) Listen(req *pb.ListenRequest, stream pb.TeleProxy_List
 	s.configs.RemoveSpyConfig(config.Id)
 	return nil
 }
+
 func (s *teleProxyServer) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpResponse, error) {
 	if req.ApiKey != apiKey {
 		logger.Print("Not matching api key")
@@ -93,7 +94,7 @@ func Start(idChan chan string, requestChan chan http.Request, responseWriterChan
 	grpcServer := grpc.NewServer()
 
 	serv := &teleProxyServer{
-		configs: configs,
+		configs:   configs,
 		streamMap: map[string](chan bool){},
 	}
 	pb.RegisterTeleProxyServer(grpcServer, serv)
