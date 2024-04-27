@@ -1,9 +1,12 @@
 package client
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"sync"
 
@@ -14,7 +17,7 @@ import (
 
 var logger = log.New(os.Stdout, "[client] ", log.LstdFlags|log.Lmicroseconds)
 
-func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, apikey string, key string, value string) {
+func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, apikey string, key string, value string, target string) {
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
@@ -47,6 +50,8 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 		Id:     config.Id,
 	})
 
+	httpClient := &http.Client{}
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -58,14 +63,45 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 			wg.Done()
 			return
 		default:
-			http, err := stream.Recv()
+			listenResp, err := stream.Recv()
 			if err == io.EOF {
 				break
 			}
 			if err != nil {
 				logger.Printf("Failed to listen: %v", err)
 			}
-			logger.Printf("Recv: %v", http)
+
+			httpReq, err := http.NewRequest(listenResp.Method, listenResp.Url, bytes.NewReader(listenResp.Body))
+			if err != nil {
+				stream.Send(&pb.ListenRequest{
+					ApiKey: apikey,
+					Id:     config.Id,
+				})
+				stream.CloseSend()
+				logger.Fatalf("Failed to create request: %v", err)
+			}
+
+			httpReq.URL, err = url.Parse(target)
+			if err != nil {
+				stream.Send(&pb.ListenRequest{
+					ApiKey: apikey,
+					Id:     config.Id,
+				})
+				stream.CloseSend()
+				log.Fatalf("Failed to parse target info: %v", err)
+			}
+
+			resp, err := httpClient.Do(httpReq)
+			if err != nil {
+				stream.Send(&pb.ListenRequest{
+					ApiKey: apikey,
+					Id:     config.Id,
+				})
+				stream.CloseSend()
+				log.Fatalf("Failed to handle request: %v", err)
+			}
+
+			logger.Printf("Resp: %v", resp)
 			stream.Send(&pb.ListenRequest{
 				ApiKey: apikey,
 				Id:     config.Id,

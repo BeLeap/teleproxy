@@ -18,7 +18,7 @@ var ClientCommand = &cobra.Command{
 		wg := sync.WaitGroup{}
 		ctx, cancel := context.WithCancel(context.Background())
 		wg.Add(1)
-		go client.StartListen(ctx, &wg, addr, apikey, key, value)
+		go client.StartListen(ctx, &wg, addr, apikey, key, value, target)
 
 		quit := make(chan os.Signal, 1)
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -33,12 +33,14 @@ var addr string
 var apikey string
 var key string
 var value string
+var target string
 
 func init() {
 	ClientCommand.Flags().StringVarP(&addr, "addr", "a", "127.0.0.1:2344", "server addr")
 	ClientCommand.Flags().StringVarP(&apikey, "apikey", "", "", "api key")
 	ClientCommand.Flags().StringVarP(&key, "key", "k", "User-No", "Header Key to Spy")
 	ClientCommand.Flags().StringVarP(&value, "value", "v", "", "Header Value to Spy")
+	ClientCommand.Flags().StringVarP(&target, "target", "t", "", "Target")
 
 	ClientCommand.AddCommand(dump.DumpCommand)
 }
