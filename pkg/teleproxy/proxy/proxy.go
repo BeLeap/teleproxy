@@ -80,6 +80,7 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 	}
 
 	logger.Printf("Match result: %v", matching)
+	logger.Printf("%v", err)
 
 	var resp *http.Response
 	if !errors.Is(err, spyconfigs.NoMatchingError) {

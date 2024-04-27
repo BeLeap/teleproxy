@@ -23,9 +23,12 @@ message ListenRequest {
   string id = 2;
 
   string status = 3;
-  string proto = 4;
-  map<string, HeaderValues> header = 5;
-  bytes body = 6;
+  int32 statusCode = 4;
+  string proto = 5;
+  int32 protoMajor = 6;
+  int32 protoMinor = 7;
+  map<string, HeaderValues> header = 8;
+  bytes body = 9;
 }
 message ListenResponse {
   string method = 1;
