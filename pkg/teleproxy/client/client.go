@@ -112,11 +112,17 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 			}
 
 			logger.Printf("Resp: %v", resp)
-			httpresponse.FromHttpResponse(resp)
-			stream.Send(&pb.ListenRequest{
-				ApiKey: apikey,
-				Id:     config.Id,
-			})
+			httpResponse, err := httpresponse.FromHttpResponse(resp)
+			if err != nil {
+				stream.Send(&pb.ListenRequest{
+					ApiKey: apikey,
+					Id:     config.Id,
+				})
+				stream.CloseSend()
+				log.Fatalf("Failed to handle request: %v", err)
+			}
+
+			stream.Send(httpResponse.ToPb(apikey, config.Id))
 		}
 	}
 }
