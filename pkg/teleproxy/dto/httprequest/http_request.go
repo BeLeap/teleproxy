@@ -13,7 +13,7 @@ import (
 type HttpRequestDto struct {
 	Method  string
 	Url     *url.URL
-	Headers map[string][]string
+	Header map[string][]string
 	Body    []byte
 }
 
@@ -25,7 +25,7 @@ func FromHttpRequest(req *http.Request) (*HttpRequestDto, error) {
 	return &HttpRequestDto{
 		Method:  req.Method,
 		Url:     req.URL,
-		Headers: req.Header,
+		Header: req.Header,
 		Body:    b,
 	}, nil
 }
@@ -34,7 +34,7 @@ func (r *HttpRequestDto) ToPb() pb.ListenResponse {
 	return pb.ListenResponse{
 		Method:  r.Method,
 		Url:     r.Url.String(),
-		Headers: headervalues.ToPb(r.Headers),
+		Header: headervalues.ToPb(r.Header),
 		Body:    r.Body,
 	}
 }
@@ -48,7 +48,7 @@ func FromPb(in *pb.ListenResponse) (*HttpRequestDto, error) {
 	return &HttpRequestDto{
 		Method:  in.Method,
 		Url:     url,
-		Headers: headervalues.FromPb(in.Headers),
+		Header: headervalues.FromPb(in.Header),
 		Body:    in.Body,
 	}, nil
 }
@@ -58,7 +58,7 @@ func (r *HttpRequestDto) ToHttpRequest() (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header = r.Headers
+	req.Header = r.Header
 
 	return req, nil
 }

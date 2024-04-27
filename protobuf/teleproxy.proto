@@ -30,7 +30,7 @@ message ListenRequest {
 message ListenResponse {
   string method = 1;
   string url = 2;
-  map<string, HeaderValues> headers = 3;
+  map<string, HeaderValues> header = 3;
   bytes body = 4;
 }
 

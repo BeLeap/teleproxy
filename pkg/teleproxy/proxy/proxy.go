@@ -11,6 +11,7 @@ import (
 	"os"
 	"strings"
 
+	"beleap.dev/teleproxy/pkg/teleproxy/dto/httprequest"
 	"beleap.dev/teleproxy/pkg/teleproxy/spyconfigs"
 )
 
