@@ -7,7 +7,7 @@ import (
 	"sync"
 	"syscall"
 
-	"beleap.dev/teleproxy/cmd/teleproxy/client/dump"
+	"beleap.dev/teleproxy/cmd/teleproxy/client/admin"
 	"beleap.dev/teleproxy/pkg/teleproxy/client"
 	"github.com/spf13/cobra"
 )
@@ -42,5 +42,5 @@ func init() {
 	ClientCommand.Flags().StringVarP(&value, "value", "v", "", "Header Value to Spy")
 	ClientCommand.Flags().StringVarP(&target, "target", "t", "", "Target")
 
-	ClientCommand.AddCommand(dump.DumpCommand)
+	ClientCommand.AddCommand(admin.AdminCommand)
 }
