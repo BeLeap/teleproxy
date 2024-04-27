@@ -20,8 +20,6 @@ message DeregisterResponse {}
 
 message HttpResponse {
   string api_key = 1;
-
-  string id = 2;
 }
 message HttpRequest {
   string method = 1;
