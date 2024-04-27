@@ -69,8 +69,7 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 				break
 			}
 			if err != nil {
-				logger.Printf("Failed to listen: %v", err)
-				break
+				logger.Fatalf("Failed to listen: %v", err)
 			}
 
 			httpRequestDto, err := httprequest.FromPb(listenResp)

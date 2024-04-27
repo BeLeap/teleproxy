@@ -27,7 +27,11 @@ type teleProxyServer struct {
 	pb.UnimplementedTeleProxyServer
 	configs *spyconfigs.SpyConfigs
 
-	requestChan        chan *httprequest.HttpRequestDto
+	ctx      context.Context
+	cancel   context.CancelFunc
+	cancelWg sync.WaitGroup
+
+	requestChan  chan *httprequest.HttpRequestDto
 	responseChan chan *httpresponse.HttpResponseDto
 
 	streamMap map[string]chan bool
@@ -70,21 +74,29 @@ func (s *teleProxyServer) Listen(stream pb.TeleProxy_ListenServer) error {
 		return status.Error(codes.Unauthenticated, "Not matching api key")
 	}
 
+	s.cancelWg.Add(1)
+	defer s.cancelWg.Done()
+
 	for {
 		executeChan := make(chan bool)
 		s.mu.Lock()
 		s.streamMap[initResp.Id] = executeChan
 		s.mu.Unlock()
 
-		<-executeChan
-		request := <- s.requestChan
-		stream.Send(request.ToPb())
-		resp, err := stream.Recv()
-		if err != nil {
-			logger.Printf("Failed to get response: %v", err)
-		}
+		select {
+		case <-s.ctx.Done():
+			logger.Printf("Flushed %s", initResp.Id)
+			return status.Error(codes.Aborted, "Flushed")
+		case <-executeChan:
+			request := <-s.requestChan
+			stream.Send(request.ToPb())
+			resp, err := stream.Recv()
+			if err != nil {
+				logger.Printf("Failed to get response: %v", err)
+			}
 
-		s.responseChan <- httpresponse.FromPb(resp)
+			s.responseChan <- httpresponse.FromPb(resp)
+		}
 	}
 }
 
@@ -112,6 +124,12 @@ func (s *teleProxyServer) Flush(ctx context.Context, req *pb.FlushRequest) (*pb.
 	}
 
 	s.configs.FlushSpyConfigs()
+	s.cancel()
+	s.cancelWg.Wait()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	s.ctx = ctx
+	s.cancel = cancel
 	return &pb.FlushResponse{}, nil
 }
 
@@ -123,10 +141,14 @@ func Start(idChan chan string, requestChan chan *httprequest.HttpRequestDto, res
 
 	grpcServer := grpc.NewServer()
 
+	ctx, cancel := context.WithCancel(context.Background())
 	serv := &teleProxyServer{
-		configs:   configs,
+		configs: configs,
 
-		requestChan: requestChan,
+		ctx:    ctx,
+		cancel: cancel,
+
+		requestChan:  requestChan,
 		responseChan: responseChan,
 
 		streamMap: map[string](chan bool){},
