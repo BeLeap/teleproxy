@@ -19,6 +19,14 @@ type HttpResponseDto struct {
 	Body       []byte
 }
 
+var InternalServerError = &HttpResponseDto{
+	Status: "500 Internal Server Error",
+	StatusCode: 500,
+	Proto: "HTTP/1.1",
+	ProtoMajor: 1,
+	ProtoMinor: 1,
+}
+
 func FromPb(in *pb.ListenRequest) *HttpResponseDto {
 	return &HttpResponseDto{
 		Status: in.Status,

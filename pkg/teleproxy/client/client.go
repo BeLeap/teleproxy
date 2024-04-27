@@ -70,57 +70,48 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 			}
 			if err != nil {
 				logger.Printf("Failed to listen: %v", err)
+				break
 			}
 
 			httpRequestDto, err := httprequest.FromPb(listenResp)
 			if err != nil {
-				stream.Send(&pb.ListenRequest{
-					ApiKey: apikey,
-					Id:     config.Id,
-				})
+				stream.Send(httpresponse.InternalServerError.ToPb(apikey, config.Id))
 				stream.CloseSend()
-				logger.Fatalf("Failed convert to dto: %v", err)
+				logger.Printf("Failed convert to dto: %v", err)
+				break
 			}
 			logger.Printf("Handling request: %s %s", httpRequestDto.Method, httpRequestDto.Url)
 
 			httpReq, err := httpRequestDto.ToHttpRequest()
 			if err != nil {
-				stream.Send(&pb.ListenRequest{
-					ApiKey: apikey,
-					Id:     config.Id,
-				})
+				stream.Send(httpresponse.InternalServerError.ToPb(apikey, config.Id))
 				stream.CloseSend()
-				logger.Fatalf("Failed to create request: %v", err)
+				logger.Printf("Failed to create request: %v", err)
+				break
 			}
 
 			httpReq.URL, err = url.Parse(target)
 			if err != nil {
-				stream.Send(&pb.ListenRequest{
-					ApiKey: apikey,
-					Id:     config.Id,
-				})
+				stream.Send(httpresponse.InternalServerError.ToPb(apikey, config.Id))
 				stream.CloseSend()
-				logger.Fatalf("Failed to parse target info: %v", err)
+				logger.Printf("Failed to parse target info: %v", err)
+				break
 			}
 
 			resp, err := httpClient.Do(httpReq)
 			if err != nil {
-				stream.Send(&pb.ListenRequest{
-					ApiKey: apikey,
-					Id:     config.Id,
-				})
+				stream.Send(httpresponse.InternalServerError.ToPb(apikey, config.Id))
 				stream.CloseSend()
-				logger.Fatalf("Failed to handle request: %v", err)
+				logger.Printf("Failed to handle request: %v", err)
+				break
 			}
 
 			httpResponse, err := httpresponse.FromHttpResponse(resp)
 			if err != nil {
-				stream.Send(&pb.ListenRequest{
-					ApiKey: apikey,
-					Id:     config.Id,
-				})
+				stream.Send(httpresponse.InternalServerError.ToPb(apikey, config.Id))
 				stream.CloseSend()
-				logger.Fatalf("Failed to handle request: %v", err)
+				logger.Printf("Failed to handle request: %v", err)
+				break
 			}
 
 			stream.Send(httpResponse.ToPb(apikey, config.Id))
