@@ -16,15 +16,15 @@ message DeregisterRequest {
 }
 message DeregisterResponse {}
 
-message HttpResponse { string api_key = 1; }
-message HttpRequest { string method = 1; }
+message ListenRequest { string api_key = 1; }
+message ListenResponse { string method = 1; }
 
 message DumpRequest { string api_key = 1; }
 message DumpResponse { string dump = 1; }
 
 service TeleProxy {
   rpc Register(RegisterRequest) returns (RegisterResponse) {}
-  rpc Listen(stream HttpResponse) returns (stream HttpRequest) {}
+  rpc Listen(stream ListenRequest) returns (stream ListenResponse) {}
   rpc Deregister(DeregisterRequest) returns (DeregisterResponse) {}
   rpc Dump(DumpRequest) returns (DumpResponse) {}
 }

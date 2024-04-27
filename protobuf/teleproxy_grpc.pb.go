@@ -55,8 +55,8 @@ func (c *teleProxyClient) Listen(ctx context.Context, opts ...grpc.CallOption) (
 }
 
 type TeleProxy_ListenClient interface {
-	Send(*HttpResponse) error
-	Recv() (*HttpRequest, error)
+	Send(*ListenRequest) error
+	Recv() (*ListenResponse, error)
 	grpc.ClientStream
 }
 
@@ -64,12 +64,12 @@ type teleProxyListenClient struct {
 	grpc.ClientStream
 }
 
-func (x *teleProxyListenClient) Send(m *HttpResponse) error {
+func (x *teleProxyListenClient) Send(m *ListenRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *teleProxyListenClient) Recv() (*HttpRequest, error) {
-	m := new(HttpRequest)
+func (x *teleProxyListenClient) Recv() (*ListenResponse, error) {
+	m := new(ListenResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -157,8 +157,8 @@ func _TeleProxy_Listen_Handler(srv interface{}, stream grpc.ServerStream) error 
 }
 
 type TeleProxy_ListenServer interface {
-	Send(*HttpRequest) error
-	Recv() (*HttpResponse, error)
+	Send(*ListenResponse) error
+	Recv() (*ListenRequest, error)
 	grpc.ServerStream
 }
 
@@ -166,12 +166,12 @@ type teleProxyListenServer struct {
 	grpc.ServerStream
 }
 
-func (x *teleProxyListenServer) Send(m *HttpRequest) error {
+func (x *teleProxyListenServer) Send(m *ListenResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *teleProxyListenServer) Recv() (*HttpResponse, error) {
-	m := new(HttpResponse)
+func (x *teleProxyListenServer) Recv() (*ListenRequest, error) {
+	m := new(ListenRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
