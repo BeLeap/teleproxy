@@ -21,7 +21,11 @@ message ListenRequest {
 
   string id = 2;
 }
-message ListenResponse { string method = 1; }
+message ListenResponse {
+  string method = 1;
+  string url = 2;
+  bytes body = 3;
+}
 
 message DumpRequest { string api_key = 1; }
 message DumpResponse { string dump = 1; }
