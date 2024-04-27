@@ -81,6 +81,8 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 				stream.CloseSend()
 				logger.Fatalf("Failed convert to dto: %v", err)
 			}
+			logger.Printf("Handling request: %s %s", httpRequestDto.Method, httpRequestDto.Url)
+
 			httpReq, err := httpRequestDto.ToHttpRequest()
 			if err != nil {
 				stream.Send(&pb.ListenRequest{
@@ -111,7 +113,6 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 				logger.Fatalf("Failed to handle request: %v", err)
 			}
 
-			logger.Printf("Resp: %v", resp)
 			httpResponse, err := httpresponse.FromHttpResponse(resp)
 			if err != nil {
 				stream.Send(&pb.ListenRequest{

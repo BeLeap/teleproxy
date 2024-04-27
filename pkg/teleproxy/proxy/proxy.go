@@ -94,6 +94,7 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 		p.requestChan <- httpRequest
 		respDto := <-p.responseChan
 		resp = respDto.ToHttpResponse()
+		logger.Printf("Resp: %v", resp)
 	} else {
 		client := &http.Client{}
 		req.URL = p.target
