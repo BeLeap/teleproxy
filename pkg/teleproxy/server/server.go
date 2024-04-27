@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 	"os"
 	"sync"
 
@@ -28,8 +27,8 @@ type teleProxyServer struct {
 	pb.UnimplementedTeleProxyServer
 	configs *spyconfigs.SpyConfigs
 
-	requestChan        chan http.Request
-	responseWriterChan chan http.ResponseWriter
+	requestChan        chan *httprequest.HttpRequestDto
+	responseChan chan *httpresponse.HttpResponseDto
 
 	streamMap map[string]chan bool
 	mu        sync.Mutex
@@ -78,14 +77,14 @@ func (s *teleProxyServer) Listen(stream pb.TeleProxy_ListenServer) error {
 		s.mu.Unlock()
 
 		<-executeChan
-		stream.Send(&pb.ListenResponse{
-			Method: "GET",
-		})
+		request := <- s.requestChan
+		stream.Send(request.ToPb())
 		resp, err := stream.Recv()
 		if err != nil {
-			log.Printf("Failed to get response: %v", err)
+			logger.Printf("Failed to get response: %v", err)
 		}
-		logger.Print("Recv: ", resp)
+
+		s.responseChan <- httpresponse.FromPb(resp)
 	}
 }
 
@@ -106,7 +105,7 @@ func (s *teleProxyServer) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.Du
 	return resp, nil
 }
 
-func Start(idChan chan string, requestChan chan *httprequest.HttpRequestDto, responseWriterChan chan *httpresponse.HttpResponseDto, configs *spyconfigs.SpyConfigs, port int) {
+func Start(idChan chan string, requestChan chan *httprequest.HttpRequestDto, responseChan chan *httpresponse.HttpResponseDto, configs *spyconfigs.SpyConfigs, port int) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		logger.Fatalf("Failed to start server: %v", err)
@@ -116,6 +115,10 @@ func Start(idChan chan string, requestChan chan *httprequest.HttpRequestDto, res
 
 	serv := &teleProxyServer{
 		configs:   configs,
+
+		requestChan: requestChan,
+		responseChan: responseChan,
+
 		streamMap: map[string](chan bool){},
 	}
 	pb.RegisterTeleProxyServer(grpcServer, serv)

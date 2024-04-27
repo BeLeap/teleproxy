@@ -30,8 +30,8 @@ func FromHttpRequest(req *http.Request) (*HttpRequestDto, error) {
 	}, nil
 }
 
-func (r *HttpRequestDto) ToPb() pb.ListenResponse {
-	return pb.ListenResponse{
+func (r *HttpRequestDto) ToPb() *pb.ListenResponse {
+	return &pb.ListenResponse{
 		Method: r.Method,
 		Url:    r.Url.String(),
 		Header: headervalues.ToPb(r.Header),

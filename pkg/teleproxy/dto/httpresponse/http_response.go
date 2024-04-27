@@ -16,6 +16,15 @@ type HttpResponseDto struct {
 	Body   []byte
 }
 
+func FromPb(in *pb.ListenRequest) *HttpResponseDto {
+	return &HttpResponseDto{
+		Status: in.Status,
+		Proto: in.Proto,
+		Header: headervalues.FromPb(in.Header),
+		Body: in.Body,
+	}
+}
+
 func FromHttpResponse(in *http.Response) (*HttpResponseDto, error) {
 	body, err := io.ReadAll(in.Body)
 	if err != nil {
