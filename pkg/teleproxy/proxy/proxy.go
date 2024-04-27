@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"beleap.dev/teleproxy/pkg/teleproxy/dto/httprequest"
+	"beleap.dev/teleproxy/pkg/teleproxy/dto/httpresponse"
 	"beleap.dev/teleproxy/pkg/teleproxy/spyconfigs"
 )
 
@@ -61,7 +62,9 @@ type proxyHandler struct {
 	target     *url.URL
 	spyconfigs *spyconfigs.SpyConfigs
 
-	idChan chan string
+	idChan       chan string
+	requestChan  chan *httprequest.HttpRequestDto
+	responseChan chan *httpresponse.HttpResponseDto
 }
 
 func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
@@ -78,18 +81,28 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 
 	logger.Printf("Match result: %v", matching)
 
-	if matching != nil {
-		p.idChan <- *matching
-	}
-
 	var resp *http.Response
-	client := &http.Client{}
-	req.URL = p.target
-	resp, err = client.Do(req)
-	if err != nil {
-		http.Error(wr, "Server Error", http.StatusInternalServerError)
-		logger.Print("Failed to proxy request: ", err)
-		return
+	if !errors.Is(err, spyconfigs.NoMatchingError) {
+		p.idChan <- matching
+		httpRequest, err := httprequest.FromHttpRequest(req)
+		if err != nil {
+			http.Error(wr, "Server Error", http.StatusInternalServerError)
+			logger.Print("Failed to proxy request: ", err)
+			return
+		}
+
+		p.requestChan <- httpRequest
+		respDto := <-p.responseChan
+		resp = respDto.ToHttpResponse()
+	} else {
+		client := &http.Client{}
+		req.URL = p.target
+		resp, err = client.Do(req)
+		if err != nil {
+			http.Error(wr, "Server Error", http.StatusInternalServerError)
+			logger.Print("Failed to proxy request: ", err)
+			return
+		}
 	}
 	defer resp.Body.Close()
 
@@ -100,7 +113,7 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 	io.Copy(wr, resp.Body)
 }
 
-func Start(idChan chan string, configs *spyconfigs.SpyConfigs, port int, targetRaw string) {
+func Start(idChan chan string, requestChan chan *httprequest.HttpRequestDto, responseChan chan *httpresponse.HttpResponseDto, configs *spyconfigs.SpyConfigs, port int, targetRaw string) {
 	logger.Print(targetRaw)
 	target, err := url.Parse(targetRaw)
 	if err != nil {
@@ -112,7 +125,10 @@ func Start(idChan chan string, configs *spyconfigs.SpyConfigs, port int, targetR
 		Handler: &proxyHandler{
 			target:     target,
 			spyconfigs: configs,
-			idChan:     idChan,
+
+			idChan:       idChan,
+			requestChan:  requestChan,
+			responseChan: responseChan,
 		},
 	}
 	logger.Printf("Listening on %s", s.Addr)

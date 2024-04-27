@@ -1,6 +1,7 @@
 package httpresponse
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 
@@ -38,5 +39,14 @@ func (d *HttpResponseDto) ToPb(apiKey string, id string) *pb.ListenRequest {
 		Proto:  d.Proto,
 		Header: headervalues.ToPb(d.Header),
 		Body:   d.Body,
+	}
+}
+
+func (d *HttpResponseDto) ToHttpResponse() *http.Response {
+	return &http.Response{
+		Status: d.Status,
+		Proto: d.Proto,
+		Header: d.Header,
+		Body: io.NopCloser(bytes.NewReader(d.Body)),
 	}
 }

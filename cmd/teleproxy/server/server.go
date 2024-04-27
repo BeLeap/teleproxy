@@ -2,9 +2,10 @@ package server
 
 import (
 	"log"
-	"net/http"
 	"os"
 
+	"beleap.dev/teleproxy/pkg/teleproxy/dto/httprequest"
+	"beleap.dev/teleproxy/pkg/teleproxy/dto/httpresponse"
 	"beleap.dev/teleproxy/pkg/teleproxy/proxy"
 	"beleap.dev/teleproxy/pkg/teleproxy/server"
 	"beleap.dev/teleproxy/pkg/teleproxy/spyconfigs"
@@ -22,11 +23,11 @@ var ServerCommand = &cobra.Command{
 		configs := spyconfigs.New()
 
 		idChan := make(chan string)
-		requestChan := make(chan http.Request)
-		responseWriterChan := make(chan http.ResponseWriter)
+		requestChan := make(chan *httprequest.HttpRequestDto)
+		responseChan := make(chan *httpresponse.HttpResponseDto)
 
-		go server.Start(idChan, requestChan, responseWriterChan, &configs, port)
-		proxy.Start(idChan, &configs, proxyPort, target)
+		go server.Start(idChan, requestChan, responseChan, &configs, port)
+		proxy.Start(idChan, requestChan, responseChan, &configs, proxyPort, target)
 	},
 }
 

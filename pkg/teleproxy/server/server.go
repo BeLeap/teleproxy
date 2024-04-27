@@ -9,6 +9,8 @@ import (
 	"os"
 	"sync"
 
+	"beleap.dev/teleproxy/pkg/teleproxy/dto/httprequest"
+	"beleap.dev/teleproxy/pkg/teleproxy/dto/httpresponse"
 	"beleap.dev/teleproxy/pkg/teleproxy/spyconfig"
 	"beleap.dev/teleproxy/pkg/teleproxy/spyconfigs"
 	pb "beleap.dev/teleproxy/protobuf"
@@ -104,7 +106,7 @@ func (s *teleProxyServer) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.Du
 	return resp, nil
 }
 
-func Start(idChan chan string, requestChan chan http.Request, responseWriterChan chan http.ResponseWriter, configs *spyconfigs.SpyConfigs, port int) {
+func Start(idChan chan string, requestChan chan *httprequest.HttpRequestDto, responseWriterChan chan *httpresponse.HttpResponseDto, configs *spyconfigs.SpyConfigs, port int) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		logger.Fatalf("Failed to start server: %v", err)
