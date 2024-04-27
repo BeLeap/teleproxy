@@ -26,6 +26,7 @@ type TeleProxyClient interface {
 	Listen(ctx context.Context, opts ...grpc.CallOption) (TeleProxy_ListenClient, error)
 	Deregister(ctx context.Context, in *DeregisterRequest, opts ...grpc.CallOption) (*DeregisterResponse, error)
 	Dump(ctx context.Context, in *DumpRequest, opts ...grpc.CallOption) (*DumpResponse, error)
+	Flush(ctx context.Context, in *FlushRequest, opts ...grpc.CallOption) (*FlushResponse, error)
 }
 
 type teleProxyClient struct {
@@ -94,6 +95,15 @@ func (c *teleProxyClient) Dump(ctx context.Context, in *DumpRequest, opts ...grp
 	return out, nil
 }
 
+func (c *teleProxyClient) Flush(ctx context.Context, in *FlushRequest, opts ...grpc.CallOption) (*FlushResponse, error) {
+	out := new(FlushResponse)
+	err := c.cc.Invoke(ctx, "/TeleProxy/Flush", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TeleProxyServer is the server API for TeleProxy service.
 // All implementations must embed UnimplementedTeleProxyServer
 // for forward compatibility
@@ -102,6 +112,7 @@ type TeleProxyServer interface {
 	Listen(TeleProxy_ListenServer) error
 	Deregister(context.Context, *DeregisterRequest) (*DeregisterResponse, error)
 	Dump(context.Context, *DumpRequest) (*DumpResponse, error)
+	Flush(context.Context, *FlushRequest) (*FlushResponse, error)
 	mustEmbedUnimplementedTeleProxyServer()
 }
 
@@ -120,6 +131,9 @@ func (UnimplementedTeleProxyServer) Deregister(context.Context, *DeregisterReque
 }
 func (UnimplementedTeleProxyServer) Dump(context.Context, *DumpRequest) (*DumpResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Dump not implemented")
+}
+func (UnimplementedTeleProxyServer) Flush(context.Context, *FlushRequest) (*FlushResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Flush not implemented")
 }
 func (UnimplementedTeleProxyServer) mustEmbedUnimplementedTeleProxyServer() {}
 
@@ -214,6 +228,24 @@ func _TeleProxy_Dump_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TeleProxy_Flush_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FlushRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TeleProxyServer).Flush(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/TeleProxy/Flush",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TeleProxyServer).Flush(ctx, req.(*FlushRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TeleProxy_ServiceDesc is the grpc.ServiceDesc for TeleProxy service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -232,6 +264,10 @@ var TeleProxy_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Dump",
 			Handler:    _TeleProxy_Dump_Handler,
+		},
+		{
+			MethodName: "Flush",
+			Handler:    _TeleProxy_Flush_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

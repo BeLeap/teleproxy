@@ -13,7 +13,8 @@ var AdminCommand = &cobra.Command{
 			client.Dump(addr, apikey)
 			break
 		case "flush":
-		break
+			client.Flush(addr, apikey)
+			break
 		}
 	},
 }

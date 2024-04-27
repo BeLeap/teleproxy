@@ -141,3 +141,24 @@ func Dump(serverAddr string, apikey string) {
 
 	logger.Print(resp)
 }
+
+func Flush(serverAddr string, apikey string) {
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	}
+	conn, err := grpc.Dial(serverAddr, opts...)
+	if err != nil {
+		logger.Fatalf("Failed to dial grpc server: %v", err)
+		os.Exit(1)
+	}
+	defer conn.Close()
+
+	client := pb.NewTeleProxyClient(conn)
+
+	_, err = client.Flush(context.Background(), &pb.FlushRequest{
+		ApiKey: apikey,
+	})
+	if err != nil {
+		logger.Fatalf("Failed to call client.Dump: %v", err)
+	}
+}

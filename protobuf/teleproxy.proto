@@ -40,9 +40,13 @@ message ListenResponse {
 message DumpRequest { string api_key = 1; }
 message DumpResponse { string dump = 1; }
 
+message FlushRequest { string api_key = 1; }
+message FlushResponse {}
+
 service TeleProxy {
   rpc Register(RegisterRequest) returns (RegisterResponse) {}
   rpc Listen(stream ListenRequest) returns (stream ListenResponse) {}
   rpc Deregister(DeregisterRequest) returns (DeregisterResponse) {}
   rpc Dump(DumpRequest) returns (DumpResponse) {}
+  rpc Flush(FlushRequest) returns (FlushResponse) {}
 }
