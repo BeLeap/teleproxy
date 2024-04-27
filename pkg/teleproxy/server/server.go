@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"net/http"
@@ -34,38 +33,29 @@ type teleProxyServer struct {
 	mu        sync.Mutex
 }
 
-func (s *teleProxyServer) Listen(req *pb.ListenRequest, stream pb.TeleProxy_ListenServer) error {
+func (s *teleProxyServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	if req.ApiKey != apiKey {
 		logger.Print("Not matching api key")
-		return status.Error(codes.Unauthenticated, "Not matching api key")
+		return nil, status.Error(codes.Unauthenticated, "Not matching api key")
 	}
 
 	config := spyconfig.New(req.HeaderKey, req.HeaderValue)
 	s.configs.AddSpyConfig(config)
 
-	for {
-		executeChan := make(chan bool)
+	return &pb.RegisterResponse{
+		Id: config.Id,
+	}, nil
+}
 
-		s.mu.Lock()
-		s.streamMap[config.Id] = executeChan
-		s.mu.Unlock()
-
-		<-executeChan
-		err := stream.Send(&pb.Http{
-			Method: "GET",
-		})
-		if err == io.EOF {
-			logger.Print("Client closed connection")
-			break
-		}
-		if err != nil {
-			logger.Printf("Failed to send response: %v", err)
-			break
-		}
+func (s *teleProxyServer) Deregister(ctx context.Context, req *pb.DeregisterRequest) (*pb.DeregisterResponse, error) {
+	if req.ApiKey != apiKey {
+		logger.Print("Not matching api key")
+		return nil, status.Error(codes.Unauthenticated, "Not matching api key")
 	}
 
-	s.configs.RemoveSpyConfig(config.Id)
-	return nil
+	s.configs.RemoveSpyConfig(req.Id)
+
+	return &pb.DeregisterResponse{}, nil
 }
 
 func (s *teleProxyServer) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpResponse, error) {

@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"io"
 	"log"
 	"os"
 
@@ -26,27 +25,36 @@ func StartListen(serverAddr string, apikey string, key string, value string) {
 
 	client := pb.NewTeleProxyClient(conn)
 
-	stream, err := client.Listen(context.Background(), &pb.ListenRequest{
-		ApiKey: apikey,
-
+	config, err := client.Register(context.Background(), &pb.RegisterRequest{
+		ApiKey:      apikey,
 		HeaderKey:   key,
 		HeaderValue: value,
 	})
 	if err != nil {
-		logger.Fatalf("Failed to call client.Listen: %v", err)
-		os.Exit(1)
+		logger.Fatalf("Failed to call client.Register: %v", err)
 	}
+	logger.Printf("Registered with Id: %s", config.Id)
+	defer client.Deregister(context.Background(), &pb.DeregisterRequest{
+		ApiKey: apikey,
+		Id:     config.Id,
+	})
 
-	for {
-		http, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			logger.Fatalf("Failed to listen: %v", err)
-		}
-		logger.Printf("Recv: %v", http)
-	}
+	// stream, err := client.Listen(context.Background(), &pb.ListenRequest{ ApiKey: apikey, HeaderKey: "dummy", HeaderValue: "dummy" })
+	// if err != nil {
+	// 	logger.Fatalf("Failed to call client.Listen: %v", err)
+	// 	os.Exit(1)
+	// }
+	//
+	// for {
+	// 	http, err := stream.Recv()
+	// 	if err == io.EOF {
+	// 		break
+	// 	}
+	// 	if err != nil {
+	// 		logger.Fatalf("Failed to listen: %v", err)
+	// 	}
+	// 	logger.Printf("Recv: %v", http)
+	// }
 }
 
 func Dump(serverAddr string, apikey string) {
