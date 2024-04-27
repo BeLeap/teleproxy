@@ -83,7 +83,7 @@ func (s *teleProxyServer) Listen(stream pb.TeleProxy_ListenServer) error {
 		if err != nil {
 			log.Printf("Failed to get response: %v", err)
 		}
-		logger.Print(resp)
+		logger.Print("Recv: ", resp)
 	}
 }
 
