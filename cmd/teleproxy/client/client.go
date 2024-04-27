@@ -1,6 +1,12 @@
 package client
 
 import (
+	"context"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+
 	"beleap.dev/teleproxy/cmd/teleproxy/client/dump"
 	"beleap.dev/teleproxy/pkg/teleproxy/client"
 	"github.com/spf13/cobra"
@@ -9,7 +15,17 @@ import (
 var ClientCommand = &cobra.Command{
 	Use: "client",
 	Run: func(cmd *cobra.Command, args []string) {
-		client.StartListen(addr, apikey, key, value)
+		wg := sync.WaitGroup{}
+		ctx, cancel := context.WithCancel(context.Background())
+		wg.Add(1)
+		go client.StartListen(ctx, &wg, addr, apikey, key, value)
+
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+		<-quit
+		cancel()
+		wg.Wait()
 	},
 }
 

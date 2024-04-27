@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"sync"
 
 	pb "beleap.dev/teleproxy/protobuf"
 	"google.golang.org/grpc"
@@ -13,7 +14,7 @@ import (
 
 var logger = log.New(os.Stdout, "[client] ", log.LstdFlags|log.Lmicroseconds)
 
-func StartListen(serverAddr string, apikey string, key string, value string) {
+func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, apikey string, key string, value string) {
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
@@ -26,7 +27,7 @@ func StartListen(serverAddr string, apikey string, key string, value string) {
 
 	client := pb.NewTeleProxyClient(conn)
 
-	config, err := client.Register(context.Background(), &pb.RegisterRequest{
+	config, err := client.Register(ctx, &pb.RegisterRequest{
 		ApiKey:      apikey,
 		HeaderKey:   key,
 		HeaderValue: value,
@@ -35,34 +36,41 @@ func StartListen(serverAddr string, apikey string, key string, value string) {
 		logger.Fatalf("Failed to call client.Register: %v", err)
 	}
 	logger.Printf("Registered with Id: %s", config.Id)
-	defer client.Deregister(context.Background(), &pb.DeregisterRequest{
-		ApiKey: apikey,
-		Id:     config.Id,
-	})
 
-	stream, err := client.Listen(context.Background())
+	stream, err := client.Listen(ctx)
 	if err != nil {
 		logger.Fatalf("Failed to call client.Listen: %v", err)
 		os.Exit(1)
 	}
 	stream.Send(&pb.ListenRequest{
 		ApiKey: apikey,
-		Id: config.Id,
+		Id:     config.Id,
 	})
 
 	for {
-		http, err := stream.Recv()
-		if err == io.EOF {
-			break
+		select {
+		case <-ctx.Done():
+			client.Deregister(ctx, &pb.DeregisterRequest{
+				ApiKey: apikey,
+				Id:     config.Id,
+			})
+			logger.Printf("Deregistered with Id: %s", config.Id)
+			wg.Done()
+			return
+		default:
+			http, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				logger.Printf("Failed to listen: %v", err)
+			}
+			logger.Printf("Recv: %v", http)
+			stream.Send(&pb.ListenRequest{
+				ApiKey: apikey,
+				Id:     config.Id,
+			})
 		}
-		if err != nil {
-			logger.Fatalf("Failed to listen: %v", err)
-		}
-		logger.Printf("Recv: %v", http)
-		stream.Send(&pb.ListenRequest{
-			ApiKey: apikey,
-			Id: config.Id,
-		})
 	}
 }
 
