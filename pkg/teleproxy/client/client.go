@@ -10,6 +10,7 @@ import (
 	"os"
 	"sync"
 
+	http_request_dto "beleap.dev/teleproxy/pkg/teleproxy/dto"
 	pb "beleap.dev/teleproxy/protobuf"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -71,7 +72,16 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 				logger.Printf("Failed to listen: %v", err)
 			}
 
-			httpReq, err := http.NewRequest(listenResp.Method, listenResp.Url, bytes.NewReader(listenResp.Body))
+			httpRequestDto, err := http_request_dto.FromPb(listenResp)
+			if err != nil {
+				stream.Send(&pb.ListenRequest{
+					ApiKey: apikey,
+					Id:     config.Id,
+				})
+				stream.CloseSend()
+				logger.Fatalf("Failed convert to dto: %v", err)
+			}
+			httpReq, err := httpRequestDto.ToHttpRequest()
 			if err != nil {
 				stream.Send(&pb.ListenRequest{
 					ApiKey: apikey,
