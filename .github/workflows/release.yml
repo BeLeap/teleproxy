@@ -22,18 +22,18 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
       - name: login to registry
-        uses: docker/login-action
+        uses: docker/login-action@master
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: generate docker metadatab
+      - name: generate docker metadata
         id: meta
-        uses: docker/metadata-action
+        uses: docker/metadata-action@master
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
       - name: build and push docker image
-        uses: docker/build-push-action
+        uses: docker/build-push-action@master
         with:
           context: .
           push: true
