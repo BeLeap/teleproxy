@@ -31,4 +31,4 @@ Flags:
 ```
 
 Default config file location for Docker image is `/etc/teleproxy/config.yaml`
-For avaliable values for `config.yaml` see [`examples/config/config.yaml`](examples/config/config.yaml).
+For avaliable values for `config.yaml` see [`examples/config/config.yaml`](../examples/config/config.yaml).
