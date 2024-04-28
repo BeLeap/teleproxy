@@ -1,14 +1,37 @@
-# Installation
+# Client
 
-## macOS
+## Usage
 
-### Using homebrew
+```sh
+Usage:
+  teleproxy client [flags]
+  teleproxy client [command]
+
+Available Commands:
+  admin       
+
+Flags:
+  -a, --addr string     server addr (default "127.0.0.1:2344")
+      --apikey string   api key
+  -h, --help            help for client
+  -k, --key string      Header Key to Spy (default "User-No")
+  -t, --target string   Target
+  -v, --value string    Header Value to Spy
+
+Use "teleproxy client [command] --help" for more information about a command.
+```
+
+## Installation
+
+### macOS
+
+#### Using homebrew
 
 ```sh
 brew install beleap/tap/teleproxy
 ```
 
-### Download from release
+#### Download from release
 
 1. Download appropriate tar
 2. Extarct
@@ -16,7 +39,9 @@ brew install beleap/tap/teleproxy
     1. If you get an error "is damaged and can’t be opened." when opening, run following command.
         `xattr -cr <path-to-teleproxy>`
 
-# Starting proxy server
+# Server
+
+## Usage
 
 ```sh
 Usage:
@@ -30,5 +55,6 @@ Flags:
   -t, --target string   target (default "http://localhost:4000")
 ```
 
-Default config file location for Docker image is `/etc/teleproxy/config.yaml`
+Default config file location for Docker image is `/etc/teleproxy/config.yaml`.
+
 For avaliable values for `config.yaml` see [`examples/config/config.yaml`](../examples/config/config.yaml).
