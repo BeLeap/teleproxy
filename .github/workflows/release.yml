@@ -13,7 +13,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  - name: docker
+  docker:
     runs-on: ubuntu-latest
     permissions:
       contents: read
