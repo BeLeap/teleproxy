@@ -58,7 +58,7 @@ Flags:
 Default config file location for Docker image is `/etc/teleproxy/config.yaml`.
 
 `API_KEY` environment variable is required.
-Use any random value. This value is used for authenticate client.
+Use any random value. This value is used to authenticate client.
 
 > [!NOTE]
 > Use `openssl rand -hex 8` to generate appropriate random value.
