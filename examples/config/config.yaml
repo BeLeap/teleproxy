@@ -1,2 +1,3 @@
 port: 2344
+proxyPort: 2345
 target: http://localhost:4000
