@@ -2,6 +2,12 @@
 
 ## macOS
 
+### Using homebrew
+
+```sh
+brew install beleap/tap/teleproxy
+```
+
 ### Download from release
 
 1. Download appropriate tar
