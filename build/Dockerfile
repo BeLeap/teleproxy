@@ -1,14 +1,17 @@
-FROM golang:1.22.1-bookworm
+FROM golang:1.22.1-bookworm AS builder
 
 WORKDIR /app
 
-COPY . .
-
-RUN mkdir -p /etc/teleproxy
-RUN cp examples/config/config.yaml /etc/teleproxy/config.yaml
-
+COPY go.mod go.sum ./
 RUN go mod download
 
-RUN go build ./cmd/teleproxy
+COPY . .
 
-CMD ["/app/teleproxy", "server", "-c", "/etc/teleproxy/config.yaml"]
+RUN CGO_ENABLED=0 go build ./cmd/teleproxy
+
+FROM gcr.io/distroless/static-debian12
+
+COPY examples/config/config.yaml /etc/teleproxy/config.yaml
+COPY --from=builder /app/teleproxy /bin/teleproxy
+
+ENTRYPOINT ["/bin/teleproxy", "server", "-c", "/etc/teleproxy/config.yaml"]
