@@ -31,9 +31,7 @@ jobs:
             FILENAME="teleproxy.exe"
           fi
           GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o bin/$FILENAME ./cmd/teleproxy
-      - name: compress
-        run: |
-          tar czf teleproxy-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz ./teleproxy*
+          tar czf teleproxy-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz ./bin/$FILENAME
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
