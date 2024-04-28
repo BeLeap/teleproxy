@@ -35,7 +35,7 @@ var value string
 var target string
 
 func init() {
-	ClientCommand.Flags().StringVarP(&addr, "addr", "a", "127.0.0.1:2344", "server addr")
+	ClientCommand.Flags().StringVarP(&addr, "addr", "a", "127.0.0.1:4001", "server addr")
 	ClientCommand.Flags().StringVarP(&apikey, "apikey", "", "", "api key")
 	ClientCommand.Flags().StringVarP(&key, "key", "k", "User-No", "Header Key to Spy")
 	ClientCommand.Flags().StringVarP(&value, "value", "v", "", "Header Value to Spy")

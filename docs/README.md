@@ -11,7 +11,7 @@ Available Commands:
   admin       
 
 Flags:
-  -a, --addr string     server addr (default "127.0.0.1:2344")
+  -a, --addr string     server addr (default "127.0.0.1:4001")
       --apikey string   api key
   -h, --help            help for client
   -k, --key string      Header Key to Spy (default "User-No")
