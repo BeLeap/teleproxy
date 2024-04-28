@@ -1,14 +1,14 @@
-FROM golang:1.22.1-bookworm AS builder
+FROM golang:1.22.1-bookworm
 
 WORKDIR /app
 
 COPY . .
+
+RUN mkdir -p /etc/teleproxy
+RUN cp examples/config/config.yaml /etc/teleproxy/config.yaml
+
 RUN go mod download
 
 RUN go build ./cmd/teleproxy
 
-FROM gcr.io/distroless/static-debian12:latest
-
-COPY --from=builder /app/teleproxy /bin/teleproxy
-
-CMD ["/bin/teleproxy", "server", "-c /etc/teleproxy/config.yaml"]
+CMD ["/app/teleproxy", "server", "-c", "/etc/teleproxy/config.yaml"]
