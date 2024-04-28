@@ -27,7 +27,7 @@ jobs:
       - name: build
         run: |
           FILENAME="teleproxy"
-          if [ "${{ runner.os }}" = "Windows" ]; then
+          if [ "${{ matrix.os }}" = "windows" ]; then
             FILENAME="teleproxy.exe"
           fi
           GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o bin/$FILENAME ./cmd/teleproxy
