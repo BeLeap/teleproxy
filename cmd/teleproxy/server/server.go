@@ -38,13 +38,13 @@ func init() {
 
 	ServerCommand.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "path for config file")
 
-	ServerCommand.Flags().IntP("port", "l", 2344, "listening port")
+	ServerCommand.Flags().IntP("port", "l", 4001, "listening port")
 	viper.BindPFlag("port", ServerCommand.Flags().Lookup("port"))
 
-	ServerCommand.Flags().StringP("target", "t", "http://localhost:4000", "target")
+	ServerCommand.Flags().StringP("target", "t", "http://localhost:8080", "target")
 	viper.BindPFlag("target", ServerCommand.Flags().Lookup("target"))
 
-	ServerCommand.Flags().IntP("proxyPort", "p", 2345, "proxing port")
+	ServerCommand.Flags().IntP("proxyPort", "p", 4000, "proxing port")
 	viper.BindPFlag("proxyPort", ServerCommand.Flags().Lookup("proxyPort"))
 }
 
