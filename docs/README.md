@@ -50,9 +50,9 @@ Usage:
 Flags:
   -c, --config string   path for config file
   -h, --help            help for server
-  -l, --port int        listening port (default 2344)
-  -p, --proxyPort int   proxing port (default 2345)
-  -t, --target string   target (default "http://localhost:4000")
+  -l, --port int        listening port (default 4001)
+  -p, --proxyPort int   proxing port (default 4000)
+  -t, --target string   target (default "http://localhost:8080")
 ```
 
 Default config file location for Docker image is `/etc/teleproxy/config.yaml`.
