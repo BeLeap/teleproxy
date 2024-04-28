@@ -9,6 +9,6 @@ RUN go build ./cmd/teleproxy
 
 FROM gcr.io/distroless/static-debian12:latest
 
-COPY --from=builder teleproxy /bin/teleproxy
+COPY --from=builder /app/teleproxy /bin/teleproxy
 
 CMD ["/bin/teleproxy", "server", "-c /etc/teleproxy/config.yaml"]
