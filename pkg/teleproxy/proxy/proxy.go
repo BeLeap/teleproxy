@@ -124,7 +124,7 @@ func Start(idChan chan string, requestChan chan *httprequest.HttpRequestDto, res
 	}
 
 	s := &http.Server{
-		Addr: fmt.Sprintf(":%d", port),
+		Addr: fmt.Sprintf("0.0.0.0:%d", port),
 		Handler: &proxyHandler{
 			target:     target,
 			spyconfigs: configs,
