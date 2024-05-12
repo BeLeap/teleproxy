@@ -36,11 +36,18 @@ jobs:
             type=ref,event=branch
             type=semver,pattern={{version}}
             type=sha
+      - name: set up QEMU
+        uses: docker/setup-qemu-action@v3
       - name: build and push docker image
         uses: docker/build-push-action@master
         with:
           context: .
           file: build/Dockerfile
+          platforms:
+            - linux/amd64
+            - linux/arm64
+          cache-from: gha
+          cache-to: gha
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
