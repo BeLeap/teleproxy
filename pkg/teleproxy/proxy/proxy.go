@@ -135,5 +135,5 @@ func Start(idChan chan string, requestChan chan *httprequest.HttpRequestDto, res
 		},
 	}
 	logger.Printf("Listening on %s", s.Addr)
-	s.ListenAndServe()
+	logger.Println(s.ListenAndServe())
 }
