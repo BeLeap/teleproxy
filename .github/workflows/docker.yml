@@ -1,6 +1,9 @@
-name: Post-Release
+name: Docker
 
 on:
+  push:
+    branches:
+      - main
   release:
     types:
       - created
