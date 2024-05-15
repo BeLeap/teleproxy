@@ -68,7 +68,7 @@ type proxyHandler struct {
 }
 
 func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
-  logger.Printf("%s %s", req.Method, req.URL)
+  logger.Printf("%s %s %s", req.RemoteAddr, req.Method, req.URL)
 
 	matching, err := p.spyconfigs.GetMatching(req.Header)
 	if err != nil && !errors.Is(err, spyconfigs.NoMatchingError) {
@@ -99,7 +99,6 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 		logger.Printf("Resp: %v", resp)
 	} else {
 		client := &http.Client{}
-		req.URL = p.target
 		resp, err = client.Do(req)
 		if err != nil {
 			http.Error(wr, "Server Error", http.StatusInternalServerError)
