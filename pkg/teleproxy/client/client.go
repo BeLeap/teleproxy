@@ -93,7 +93,9 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 				break
 			}
 
-			httpReq.URL, err = url.Parse(target)
+			targetURL, err := url.Parse(target)
+			httpReq.URL.Scheme = targetURL.Scheme
+			httpReq.URL.Host = targetURL.Host
 			if err != nil {
 				stream.Send(httpresponse.InternalServerError.ToPb(apikey, config.Id))
 				stream.CloseSend()

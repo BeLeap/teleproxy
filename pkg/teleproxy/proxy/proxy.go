@@ -68,7 +68,7 @@ type proxyHandler struct {
 }
 
 func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
-  logger.Printf("%s %s %s", req.RemoteAddr, req.Method, req.URL)
+	logger.Printf("%s %s %s", req.RemoteAddr, req.Method, req.URL)
 
 	matching, err := p.spyconfigs.GetMatching(req.Header)
 	if err != nil && !errors.Is(err, spyconfigs.NoMatchingError) {
@@ -99,6 +99,8 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 		logger.Printf("Resp: %v", resp)
 	} else {
 		client := &http.Client{}
+		req.URL.Scheme = p.target.Scheme
+		req.URL.Host = p.target.Host
 		resp, err = client.Do(req)
 		if err != nil {
 			http.Error(wr, "Server Error", http.StatusInternalServerError)
@@ -116,7 +118,7 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 }
 
 func Start(idChan chan string, requestChan chan *httprequest.HttpRequestDto, responseChan chan *httpresponse.HttpResponseDto, configs *spyconfigs.SpyConfigs, port int, targetRaw string) {
-  logger.Printf("Proxying request to: %s", targetRaw)
+	logger.Printf("Proxying request to: %s", targetRaw)
 	target, err := url.Parse(targetRaw)
 	if err != nil {
 		logger.Fatalf("Failed to parse target: %v", err)

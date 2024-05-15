@@ -20,22 +20,22 @@ type HttpResponseDto struct {
 }
 
 var InternalServerError = &HttpResponseDto{
-	Status: "500 Internal Server Error",
+	Status:     "500 Internal Server Error",
 	StatusCode: 500,
-	Proto: "HTTP/1.1",
+	Proto:      "HTTP/1.1",
 	ProtoMajor: 1,
 	ProtoMinor: 1,
 }
 
 func FromPb(in *pb.ListenRequest) *HttpResponseDto {
 	return &HttpResponseDto{
-		Status: in.Status,
+		Status:     in.Status,
 		StatusCode: int(in.StatusCode),
-		Proto:  in.Proto,
+		Proto:      in.Proto,
 		ProtoMajor: int(in.ProtoMajor),
 		ProtoMinor: int(in.ProtoMinor),
-		Header: headervalues.FromPb(in.Header),
-		Body:   in.Body,
+		Header:     headervalues.FromPb(in.Header),
+		Body:       in.Body,
 	}
 }
 

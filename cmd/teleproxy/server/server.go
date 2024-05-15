@@ -49,7 +49,7 @@ func init() {
 }
 
 func initConfig() {
-  viper.AutomaticEnv()
+	viper.AutomaticEnv()
 
 	if cfgFile == "" {
 		return
