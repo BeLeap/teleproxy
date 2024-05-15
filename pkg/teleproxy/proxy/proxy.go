@@ -117,7 +117,7 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 }
 
 func Start(idChan chan string, requestChan chan *httprequest.HttpRequestDto, responseChan chan *httpresponse.HttpResponseDto, configs *spyconfigs.SpyConfigs, port int, targetRaw string) {
-	logger.Print(targetRaw)
+  logger.Printf("Proxying request to: %s", targetRaw)
 	target, err := url.Parse(targetRaw)
 	if err != nil {
 		logger.Fatalf("Failed to parse target: %v", err)
