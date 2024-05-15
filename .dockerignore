@@ -1,2 +1,7 @@
 build/Dockerfile
 bin
+.github/
+.git/
+examples/
+Makefile
+.gitignore
