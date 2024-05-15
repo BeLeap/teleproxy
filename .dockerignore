@@ -3,5 +3,6 @@ bin
 .github/
 .git/
 examples/
+!examples/config/config.yaml
 Makefile
 .gitignore
