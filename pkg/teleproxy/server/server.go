@@ -15,6 +15,7 @@ import (
 	pb "beleap.dev/teleproxy/protobuf"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 )
 
@@ -161,6 +162,7 @@ func Start(idChan chan string, requestChan chan *httprequest.HttpRequestDto, res
 	}
 	pb.RegisterTeleProxyServer(grpcServer, serv)
 	logger.Printf("Listening on %s", lis.Addr().String())
+	reflection.Register(grpcServer)
 	go grpcServer.Serve(lis)
 
 	for {
