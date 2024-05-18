@@ -93,6 +93,7 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 				break
 			}
 
+			logger.Printf("%s %s %s", httpReq.RemoteAddr, httpReq.Method, httpReq.URL)
 			targetURL, err := url.Parse(target)
 			httpReq.URL.Scheme = targetURL.Scheme
 			httpReq.URL.Host = targetURL.Host

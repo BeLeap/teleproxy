@@ -88,6 +88,7 @@ func (s *teleProxyServer) Listen(stream pb.TeleProxy_ListenServer) error {
 			logger.Printf("Flushed %s", initResp.Id)
 			return status.Error(codes.Aborted, "Flushed")
 		case <-executeChan:
+      logger.Printf("Handling proxing request to %s", initResp.Id)
 			request := <-s.requestChan
 			stream.Send(request.ToPb())
 			resp, err := stream.Recv()

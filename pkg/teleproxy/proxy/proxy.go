@@ -70,15 +70,15 @@ type proxyHandler struct {
 func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 	logger.Printf("%s %s %s", req.RemoteAddr, req.Method, req.URL)
 
-	matching, err := p.spyconfigs.GetMatching(req.Header)
-	if err != nil && !errors.Is(err, spyconfigs.NoMatchingError) {
-		logger.Printf("Exception on get matching: %v", err)
-	}
-
 	req.RequestURI = ""
 	delHopHeaders(req.Header)
 	if clientIP, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
 		appendHostToXForwardHeader(req.Header, clientIP)
+	}
+
+	matching, err := p.spyconfigs.GetMatching(req.Header)
+	if err != nil && !errors.Is(err, spyconfigs.NoMatchingError) {
+		logger.Printf("Exception on get matching: %v", err)
 	}
 
 	var resp *http.Response
