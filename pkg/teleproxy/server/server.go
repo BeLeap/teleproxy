@@ -41,6 +41,7 @@ type teleProxyServer struct {
 }
 
 func (s *teleProxyServer) Health(ctx context.Context, req *pb.EchoRequest) (*pb.EchoResponse, error) {
+	logger.Print("Receive Health Check")
 	return &pb.EchoResponse{}, nil
 }
 
