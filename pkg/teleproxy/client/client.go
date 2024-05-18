@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"crypto/tls"
 	"io"
 	"log"
 	"net/http"
@@ -13,14 +14,23 @@ import (
 	"beleap.dev/teleproxy/pkg/teleproxy/dto/httpresponse"
 	pb "beleap.dev/teleproxy/protobuf"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 var logger = log.New(os.Stdout, "[client] ", log.LstdFlags|log.Lmicroseconds)
 
-func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, apikey string, key string, value string, target string) {
-	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, apikey string, key string, value string, target string, useInsecure bool) {
+	var opts []grpc.DialOption
+	if useInsecure {
+		opts = []grpc.DialOption{
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+		}
+	} else {
+		creds := credentials.NewTLS(&tls.Config{})
+		opts = []grpc.DialOption{
+			grpc.WithTransportCredentials(creds),
+		}
 	}
 	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {
@@ -126,9 +136,7 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 }
 
 func Dump(serverAddr string, apikey string) {
-	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	}
+	opts := []grpc.DialOption{}
 	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {
 		logger.Fatalf("Failed to dial grpc server: %v", err)
