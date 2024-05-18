@@ -1,6 +1,9 @@
 syntax = "proto3";
 option go_package = "beleap.dev/teleproxy/protobuf";
 
+message EchoRequest {}
+message EchoResponse {}
+
 message RegisterRequest {
   string api_key = 1;
 
@@ -44,6 +47,8 @@ message FlushRequest { string api_key = 1; }
 message FlushResponse {}
 
 service TeleProxy {
+  rpc Health(EchoRequest) returns (EchoResponse) {}
+
   rpc Register(RegisterRequest) returns (RegisterResponse) {}
   rpc Listen(stream ListenRequest) returns (stream ListenResponse) {}
   rpc Deregister(DeregisterRequest) returns (DeregisterResponse) {}

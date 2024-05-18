@@ -19,8 +19,9 @@ import (
 )
 
 var (
-	logger = log.New(os.Stdout, "[server] ", log.LstdFlags|log.Lmicroseconds)
-	apiKey = os.Getenv("API_KEY")
+	logger                    = log.New(os.Stdout, "[server] ", log.LstdFlags|log.Lmicroseconds)
+	apiKey                    = os.Getenv("API_KEY")
+	_      pb.TeleProxyServer = &teleProxyServer{}
 )
 
 type teleProxyServer struct {
@@ -36,6 +37,10 @@ type teleProxyServer struct {
 
 	streamMap map[string]chan bool
 	mu        sync.Mutex
+}
+
+func (s *teleProxyServer) Health(ctx context.Context, req *pb.EchoRequest) (*pb.EchoResponse, error) {
+	return &pb.EchoResponse{}, nil
 }
 
 func (s *teleProxyServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
@@ -88,7 +93,7 @@ func (s *teleProxyServer) Listen(stream pb.TeleProxy_ListenServer) error {
 			logger.Printf("Flushed %s", initResp.Id)
 			return status.Error(codes.Aborted, "Flushed")
 		case <-executeChan:
-      logger.Printf("Handling proxing request to %s", initResp.Id)
+			logger.Printf("Handling proxing request to %s", initResp.Id)
 			request := <-s.requestChan
 			stream.Send(request.ToPb())
 			resp, err := stream.Recv()

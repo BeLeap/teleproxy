@@ -22,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TeleProxyClient interface {
+	Health(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoResponse, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Listen(ctx context.Context, opts ...grpc.CallOption) (TeleProxy_ListenClient, error)
 	Deregister(ctx context.Context, in *DeregisterRequest, opts ...grpc.CallOption) (*DeregisterResponse, error)
@@ -35,6 +36,15 @@ type teleProxyClient struct {
 
 func NewTeleProxyClient(cc grpc.ClientConnInterface) TeleProxyClient {
 	return &teleProxyClient{cc}
+}
+
+func (c *teleProxyClient) Health(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoResponse, error) {
+	out := new(EchoResponse)
+	err := c.cc.Invoke(ctx, "/TeleProxy/Health", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *teleProxyClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error) {
@@ -108,6 +118,7 @@ func (c *teleProxyClient) Flush(ctx context.Context, in *FlushRequest, opts ...g
 // All implementations must embed UnimplementedTeleProxyServer
 // for forward compatibility
 type TeleProxyServer interface {
+	Health(context.Context, *EchoRequest) (*EchoResponse, error)
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Listen(TeleProxy_ListenServer) error
 	Deregister(context.Context, *DeregisterRequest) (*DeregisterResponse, error)
@@ -120,6 +131,9 @@ type TeleProxyServer interface {
 type UnimplementedTeleProxyServer struct {
 }
 
+func (UnimplementedTeleProxyServer) Health(context.Context, *EchoRequest) (*EchoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Health not implemented")
+}
 func (UnimplementedTeleProxyServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
@@ -146,6 +160,24 @@ type UnsafeTeleProxyServer interface {
 
 func RegisterTeleProxyServer(s grpc.ServiceRegistrar, srv TeleProxyServer) {
 	s.RegisterService(&TeleProxy_ServiceDesc, srv)
+}
+
+func _TeleProxy_Health_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EchoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TeleProxyServer).Health(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/TeleProxy/Health",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TeleProxyServer).Health(ctx, req.(*EchoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _TeleProxy_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -253,6 +285,10 @@ var TeleProxy_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "TeleProxy",
 	HandlerType: (*TeleProxyServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Health",
+			Handler:    _TeleProxy_Health_Handler,
+		},
 		{
 			MethodName: "Register",
 			Handler:    _TeleProxy_Register_Handler,
