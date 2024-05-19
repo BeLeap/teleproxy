@@ -33,9 +33,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
             type=semver,pattern={{version}}
             type=sha
+            type=ref,event=branch
       - name: set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: set up docker buildx
@@ -48,6 +48,8 @@ jobs:
           platforms: linux/amd64, linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ steps.meta.outputs.tags[0] }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

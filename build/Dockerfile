@@ -11,6 +11,9 @@ RUN CGO_ENABLED=0 go build ./cmd/teleproxy
 
 FROM gcr.io/distroless/static-debian12
 
+ARG VERSION
+ENV VERSION=${VERSION}
+
 COPY examples/config/config.yaml /etc/teleproxy/config.yaml
 COPY --from=builder /app/teleproxy /bin/teleproxy
 

@@ -5,10 +5,15 @@ import (
 )
 
 var isVerbose bool
+var version string
 var logger *zap.Logger
 
 func SetVerbosity(verbose bool) {
 	isVerbose = verbose
+}
+
+func SetVersion(in string) {
+  version = in
 }
 
 func GetLogger() *zap.Logger {
@@ -18,8 +23,13 @@ func GetLogger() *zap.Logger {
 
 	if isVerbose {
 		logger, _ = zap.NewDevelopment()
-		return logger
+	} else {
+		logger, _ = zap.NewProduction()
 	}
-	logger, _ = zap.NewProduction()
+
+	if version != "" {
+		logger = logger.With(zap.String("version", version))
+	}
+
 	return logger
 }

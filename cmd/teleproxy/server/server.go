@@ -19,6 +19,8 @@ var ServerCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose := viper.GetBool("verbose")
 		util.SetVerbosity(verbose)
+		version := viper.GetString("version")
+    util.SetVersion(version)
 
 		apikey := viper.GetString("apikey")
 
