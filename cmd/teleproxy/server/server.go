@@ -9,6 +9,7 @@ import (
 	"beleap.dev/teleproxy/pkg/teleproxy/proxy"
 	"beleap.dev/teleproxy/pkg/teleproxy/server"
 	"beleap.dev/teleproxy/pkg/teleproxy/spyconfigs"
+	"beleap.dev/teleproxy/pkg/teleproxy/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -16,10 +17,14 @@ import (
 var ServerCommand = &cobra.Command{
 	Use: "server",
 	Run: func(cmd *cobra.Command, args []string) {
+		verbose := viper.GetBool("verbose")
+		util.SetVerbosity(verbose)
+
+		apikey := viper.GetString("apikey")
+
 		port := viper.GetInt("port")
 		target := viper.GetString("target")
 		proxyPort := viper.GetInt("proxyPort")
-		apikey := viper.GetString("apikey")
 
 		configs := spyconfigs.New()
 
@@ -34,9 +39,9 @@ var ServerCommand = &cobra.Command{
 var cfgFile string
 
 func init() {
-	cobra.OnInitialize(initConfig)
+	ServerCommand.Flags().StringVarP(&cfgFile, "config", "c", "", "path for config file")
 
-	ServerCommand.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "path for config file")
+	cobra.OnInitialize(initConfig)
 
 	ServerCommand.Flags().IntP("port", "l", 4001, "listening port")
 	viper.BindPFlag("port", ServerCommand.Flags().Lookup("port"))
@@ -46,9 +51,6 @@ func init() {
 
 	ServerCommand.Flags().IntP("proxyPort", "p", 4000, "proxing port")
 	viper.BindPFlag("proxyPort", ServerCommand.Flags().Lookup("proxyPort"))
-
-	ServerCommand.Flags().StringP("apikey", "k", "", "api key for auth")
-	viper.BindPFlag("apikey", ServerCommand.Flags().Lookup("apikey"))
 }
 
 func initConfig() {

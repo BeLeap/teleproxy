@@ -2,12 +2,21 @@ package admin
 
 import (
 	"beleap.dev/teleproxy/pkg/teleproxy/client"
+	"beleap.dev/teleproxy/pkg/teleproxy/util"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var AdminCommand = &cobra.Command{
 	Use: "admin",
 	Run: func(cmd *cobra.Command, args []string) {
+		verbose := viper.GetBool("verbose")
+		util.SetVerbosity(verbose)
+
+		apikey := viper.GetString("apikey")
+		addr := viper.GetString("addr")
+		insecure := viper.GetBool("insecure")
+
 		switch run {
 		case "dump":
 			client.Dump(addr, apikey, insecure)
@@ -19,14 +28,8 @@ var AdminCommand = &cobra.Command{
 	},
 }
 
-var addr string
-var apikey string
 var run string
-var insecure bool
 
 func init() {
-	AdminCommand.Flags().StringVarP(&addr, "addr", "a", "127.0.0.1:2344", "server addr")
-	AdminCommand.Flags().StringVar(&apikey, "apikey", "", "api key")
-	AdminCommand.Flags().StringVarP(&run, "run", "r", "", "action to run")
-	AdminCommand.Flags().BoolVarP(&insecure, "insecure", "i", false, "Use insecure connection")
+	AdminCommand.Flags().StringVarP(&run, "run", "r", "", "action to run (dump, flush)")
 }

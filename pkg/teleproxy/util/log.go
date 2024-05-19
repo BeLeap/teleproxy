@@ -1,12 +1,14 @@
 package util
 
-import "go.uber.org/zap"
+import (
+	"go.uber.org/zap"
+)
 
-var loglevel string
+var isVerbose bool
 var logger *zap.Logger
 
-func SetLogLevel(level string) {
-  loglevel = level
+func SetVerbosity(verbose bool) {
+	isVerbose = verbose
 }
 
 func GetLogger() *zap.Logger {
@@ -14,10 +16,10 @@ func GetLogger() *zap.Logger {
 		return logger
 	}
 
-	if loglevel == "debug" {
+	if isVerbose {
 		logger, _ = zap.NewDevelopment()
-    return logger
+		return logger
 	}
 	logger, _ = zap.NewProduction()
-  return logger
+	return logger
 }

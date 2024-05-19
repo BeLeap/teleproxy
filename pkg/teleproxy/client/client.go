@@ -164,7 +164,7 @@ func Dump(serverAddr string, apikey string, useInsecure bool) {
 		os.Exit(1)
 	}
 
-	util.GetLogger().Debug(resp.String())
+	util.GetLogger().Info(resp.String())
 }
 
 func Flush(serverAddr string, apikey string, useInsecure bool) {
