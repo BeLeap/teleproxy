@@ -92,7 +92,7 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 		p.requestChan[matching] <- httpRequest
 		respDto := <-p.responseChan
 		resp = respDto.ToHttpResponse()
-		util.GetLogger().Debug("Resp as " + string(resp.StatusCode))
+		util.GetLogger().Debug("Resp as " + resp.Status)
 	} else {
 		client := &http.Client{}
 		req.URL.Scheme = p.target.Scheme
