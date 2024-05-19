@@ -19,13 +19,14 @@ var ServerCommand = &cobra.Command{
 		port := viper.GetInt("port")
 		target := viper.GetString("target")
 		proxyPort := viper.GetInt("proxyPort")
+		apikey := viper.GetString("apikey")
 
 		configs := spyconfigs.New()
 
 		requestChan := map[string]chan *httprequest.HttpRequestDto{}
 		responseChan := make(chan *httpresponse.HttpResponseDto)
 
-		go server.Start(requestChan, responseChan, &configs, port)
+		go server.Start(requestChan, responseChan, &configs, port, apikey)
 		proxy.Start(requestChan, responseChan, &configs, proxyPort, target)
 	},
 }
@@ -45,6 +46,9 @@ func init() {
 
 	ServerCommand.Flags().IntP("proxyPort", "p", 4000, "proxing port")
 	viper.BindPFlag("proxyPort", ServerCommand.Flags().Lookup("proxyPort"))
+
+	ServerCommand.Flags().StringP("apikey", "k", "", "api key for auth")
+	viper.BindPFlag("apikey", ServerCommand.Flags().Lookup("apikey"))
 }
 
 func initConfig() {

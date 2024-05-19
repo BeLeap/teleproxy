@@ -21,7 +21,6 @@ import (
 
 var (
 	logger                    = log.New(os.Stdout, "[server] ", log.LstdFlags|log.Lmicroseconds)
-	apiKey                    = os.Getenv("API_KEY")
 	_      pb.TeleProxyServer = &teleProxyServer{}
 )
 
@@ -36,6 +35,8 @@ type teleProxyServer struct {
 	requestChan  map[string]chan *httprequest.HttpRequestDto
 	responseChan chan *httpresponse.HttpResponseDto
 
+	apikey string
+
 	mu sync.Mutex
 }
 
@@ -45,7 +46,7 @@ func (s *teleProxyServer) Health(ctx context.Context, req *pb.EchoRequest) (*pb.
 }
 
 func (s *teleProxyServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
-	if req.ApiKey != apiKey {
+	if req.ApiKey != s.apikey {
 		logger.Print("Not matching api key")
 		return nil, status.Error(codes.Unauthenticated, "Not matching api key")
 	}
@@ -59,7 +60,7 @@ func (s *teleProxyServer) Register(ctx context.Context, req *pb.RegisterRequest)
 }
 
 func (s *teleProxyServer) Deregister(ctx context.Context, req *pb.DeregisterRequest) (*pb.DeregisterResponse, error) {
-	if req.ApiKey != apiKey {
+	if req.ApiKey != s.apikey {
 		logger.Print("Not matching api key")
 		return nil, status.Error(codes.Unauthenticated, "Not matching api key")
 	}
@@ -75,7 +76,7 @@ func (s *teleProxyServer) Listen(stream pb.TeleProxy_ListenServer) error {
 		log.Printf("Failed to get request: %v", err)
 		return status.Error(codes.Internal, "")
 	}
-	if initResp.ApiKey != apiKey {
+	if initResp.ApiKey != s.apikey {
 		log.Print("Not matching api key")
 		return status.Error(codes.Unauthenticated, "Not matching api key")
 	}
@@ -107,7 +108,7 @@ func (s *teleProxyServer) Listen(stream pb.TeleProxy_ListenServer) error {
 }
 
 func (s *teleProxyServer) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpResponse, error) {
-	if req.ApiKey != apiKey {
+	if req.ApiKey != s.apikey {
 		logger.Print("Not matching api key")
 		return nil, status.Error(codes.Unauthenticated, "Not matching api key")
 	}
@@ -124,7 +125,7 @@ func (s *teleProxyServer) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.Du
 }
 
 func (s *teleProxyServer) Flush(ctx context.Context, req *pb.FlushRequest) (*pb.FlushResponse, error) {
-	if req.ApiKey != apiKey {
+	if req.ApiKey != s.apikey {
 		logger.Print("Not matching api key")
 		return nil, status.Error(codes.Unauthenticated, "Not matching api key")
 	}
@@ -139,7 +140,7 @@ func (s *teleProxyServer) Flush(ctx context.Context, req *pb.FlushRequest) (*pb.
 	return &pb.FlushResponse{}, nil
 }
 
-func Start(requestChan map[string]chan *httprequest.HttpRequestDto, responseChan chan *httpresponse.HttpResponseDto, configs *spyconfigs.SpyConfigs, port int) {
+func Start(requestChan map[string]chan *httprequest.HttpRequestDto, responseChan chan *httpresponse.HttpResponseDto, configs *spyconfigs.SpyConfigs, port int, apikey string) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		logger.Fatalf("Failed to start server: %v", err)
@@ -156,6 +157,8 @@ func Start(requestChan map[string]chan *httprequest.HttpRequestDto, responseChan
 
 		requestChan:  requestChan,
 		responseChan: responseChan,
+
+		apikey: apikey,
 	}
 	pb.RegisterTeleProxyServer(grpcServer, serv)
 	logger.Printf("Listening on %s", lis.Addr().String())
