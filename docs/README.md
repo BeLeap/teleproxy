@@ -12,11 +12,15 @@ Available Commands:
 
 Flags:
   -a, --addr string     server addr (default "127.0.0.1:4001")
-      --apikey string   api key
   -h, --help            help for client
-  -k, --key string      Header Key to Spy (default "User-No")
+  -i, --insecure        Use insecure connection
+      --key string      Header Key to Spy (default "User-No")
   -t, --target string   Target
-  -v, --value string    Header Value to Spy
+      --value string    Header Value to Spy
+
+Global Flags:
+      --apikey string   api key for auth
+  -v, --verbose         verbose
 
 Use "teleproxy client [command] --help" for more information about a command.
 ```
@@ -53,11 +57,15 @@ Flags:
   -l, --port int        listening port (default 4001)
   -p, --proxyPort int   proxing port (default 4000)
   -t, --target string   target (default "http://localhost:8080")
+
+Global Flags:
+      --apikey string   api key for auth
+  -v, --verbose         verbose
 ```
 
 Default config file location for Docker image is `/etc/teleproxy/config.yaml`.
 
-`API_KEY` environment variable is required.
+`apikey` is required.
 Use any random value. This value is used to authenticate client.
 
 > [!NOTE]
