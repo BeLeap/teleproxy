@@ -22,12 +22,11 @@ var ServerCommand = &cobra.Command{
 
 		configs := spyconfigs.New()
 
-		idChan := make(chan string)
-		requestChan := make(chan *httprequest.HttpRequestDto)
+		requestChan := map[string]chan *httprequest.HttpRequestDto{}
 		responseChan := make(chan *httpresponse.HttpResponseDto)
 
-		go server.Start(idChan, requestChan, responseChan, &configs, port)
-		proxy.Start(idChan, requestChan, responseChan, &configs, proxyPort, target)
+		go server.Start(requestChan, responseChan, &configs, port)
+		proxy.Start(requestChan, responseChan, &configs, proxyPort, target)
 	},
 }
 

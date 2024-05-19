@@ -135,8 +135,18 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 	}
 }
 
-func Dump(serverAddr string, apikey string) {
-	opts := []grpc.DialOption{}
+func Dump(serverAddr string, apikey string, useInsecure bool) {
+	var opts []grpc.DialOption
+	if useInsecure {
+		opts = []grpc.DialOption{
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+		}
+	} else {
+		creds := credentials.NewTLS(&tls.Config{})
+		opts = []grpc.DialOption{
+			grpc.WithTransportCredentials(creds),
+		}
+	}
 	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {
 		logger.Fatalf("Failed to dial grpc server: %v", err)
@@ -156,9 +166,17 @@ func Dump(serverAddr string, apikey string) {
 	logger.Print(resp)
 }
 
-func Flush(serverAddr string, apikey string) {
-	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+func Flush(serverAddr string, apikey string, useInsecure bool) {
+	var opts []grpc.DialOption
+	if useInsecure {
+		opts = []grpc.DialOption{
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+		}
+	} else {
+		creds := credentials.NewTLS(&tls.Config{})
+		opts = []grpc.DialOption{
+			grpc.WithTransportCredentials(creds),
+		}
 	}
 	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {

@@ -33,11 +33,10 @@ type teleProxyServer struct {
 	cancel   context.CancelFunc
 	cancelWg sync.WaitGroup
 
-	requestChan  chan *httprequest.HttpRequestDto
+	requestChan  map[string]chan *httprequest.HttpRequestDto
 	responseChan chan *httpresponse.HttpResponseDto
 
-	streamMap map[string]chan bool
-	mu        sync.Mutex
+	mu sync.Mutex
 }
 
 func (s *teleProxyServer) Health(ctx context.Context, req *pb.EchoRequest) (*pb.EchoResponse, error) {
@@ -84,9 +83,9 @@ func (s *teleProxyServer) Listen(stream pb.TeleProxy_ListenServer) error {
 	s.cancelWg.Add(1)
 	defer s.cancelWg.Done()
 
-	executeChan := make(chan bool)
+	requestChan := make(chan *httprequest.HttpRequestDto)
 	s.mu.Lock()
-	s.streamMap[initResp.Id] = executeChan
+	s.requestChan[initResp.Id] = requestChan
 	s.mu.Unlock()
 
 	for {
@@ -94,9 +93,8 @@ func (s *teleProxyServer) Listen(stream pb.TeleProxy_ListenServer) error {
 		case <-s.ctx.Done():
 			logger.Printf("Flushed %s", initResp.Id)
 			return status.Error(codes.Aborted, "Flushed")
-		case <-executeChan:
+		case request := <-requestChan:
 			logger.Printf("Handling proxing request to %s", initResp.Id)
-			request := <-s.requestChan
 			stream.Send(request.ToPb())
 			resp, err := stream.Recv()
 			if err != nil {
@@ -141,7 +139,7 @@ func (s *teleProxyServer) Flush(ctx context.Context, req *pb.FlushRequest) (*pb.
 	return &pb.FlushResponse{}, nil
 }
 
-func Start(idChan chan string, requestChan chan *httprequest.HttpRequestDto, responseChan chan *httpresponse.HttpResponseDto, configs *spyconfigs.SpyConfigs, port int) {
+func Start(requestChan map[string]chan *httprequest.HttpRequestDto, responseChan chan *httpresponse.HttpResponseDto, configs *spyconfigs.SpyConfigs, port int) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		logger.Fatalf("Failed to start server: %v", err)
@@ -158,16 +156,9 @@ func Start(idChan chan string, requestChan chan *httprequest.HttpRequestDto, res
 
 		requestChan:  requestChan,
 		responseChan: responseChan,
-
-		streamMap: map[string](chan bool){},
 	}
 	pb.RegisterTeleProxyServer(grpcServer, serv)
 	logger.Printf("Listening on %s", lis.Addr().String())
 	reflection.Register(grpcServer)
-	go grpcServer.Serve(lis)
-
-	for {
-		id := <-idChan
-		serv.streamMap[id] <- true
-	}
+	logger.Println(grpcServer.Serve(lis))
 }

@@ -62,8 +62,7 @@ type proxyHandler struct {
 	target     *url.URL
 	spyconfigs *spyconfigs.SpyConfigs
 
-	idChan       chan string
-	requestChan  chan *httprequest.HttpRequestDto
+	requestChan  map[string]chan *httprequest.HttpRequestDto
 	responseChan chan *httpresponse.HttpResponseDto
 }
 
@@ -84,8 +83,6 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 	var resp *http.Response
 	if !errors.Is(err, spyconfigs.NoMatchingError) {
 		logger.Printf("Match result: %v", matching)
-
-		p.idChan <- matching
 		httpRequest, err := httprequest.FromHttpRequest(req)
 		if err != nil {
 			http.Error(wr, "Server Error", http.StatusInternalServerError)
@@ -93,7 +90,7 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		p.requestChan <- httpRequest
+		p.requestChan[matching] <- httpRequest
 		respDto := <-p.responseChan
 		resp = respDto.ToHttpResponse()
 		logger.Printf("Resp: %v", resp)
@@ -117,7 +114,7 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 	io.Copy(wr, resp.Body)
 }
 
-func Start(idChan chan string, requestChan chan *httprequest.HttpRequestDto, responseChan chan *httpresponse.HttpResponseDto, configs *spyconfigs.SpyConfigs, port int, targetRaw string) {
+func Start(requestChan map[string]chan *httprequest.HttpRequestDto, responseChan chan *httpresponse.HttpResponseDto, configs *spyconfigs.SpyConfigs, port int, targetRaw string) {
 	logger.Printf("Proxying request to: %s", targetRaw)
 	target, err := url.Parse(targetRaw)
 	if err != nil {
@@ -130,7 +127,6 @@ func Start(idChan chan string, requestChan chan *httprequest.HttpRequestDto, res
 			target:     target,
 			spyconfigs: configs,
 
-			idChan:       idChan,
 			requestChan:  requestChan,
 			responseChan: responseChan,
 		},
