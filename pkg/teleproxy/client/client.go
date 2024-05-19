@@ -47,7 +47,7 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 	})
 	if err != nil {
 		util.GetLogger().Error("Failed to call client.Register", zap.Error(err))
-    os.Exit(1)
+		os.Exit(1)
 	}
 	util.GetLogger().Info("Registered with Id: " + config.Id)
 	wg.Add(1)

@@ -91,6 +91,13 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 
 		p.requestChan[matching] <- httpRequest
 		respDto := <-p.responseChan
+
+		defer func() {
+			if r := recover(); r != nil {
+				http.Error(wr, "Server Error", http.StatusInternalServerError)
+				util.GetLogger().Error("Failed to proxy spied request", zap.Any("recover", r))
+			}
+		}()
 		resp = respDto.ToHttpResponse()
 		util.GetLogger().Debug("Resp as " + resp.Status)
 	} else {
