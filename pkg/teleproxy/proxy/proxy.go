@@ -4,21 +4,20 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 
 	"beleap.dev/teleproxy/pkg/teleproxy/dto/httprequest"
 	"beleap.dev/teleproxy/pkg/teleproxy/dto/httpresponse"
 	"beleap.dev/teleproxy/pkg/teleproxy/spyconfigs"
+	"beleap.dev/teleproxy/pkg/teleproxy/util"
+	"go.uber.org/zap"
 )
 
 var (
-	_      http.Handler = &proxyHandler{}
-	logger              = log.New(os.Stdout, "[proxy] ", log.LstdFlags|log.Lmicroseconds)
+	_ http.Handler = &proxyHandler{}
 )
 
 // Hop-by-hop headers. These are removed when sent to the backend.
@@ -67,7 +66,7 @@ type proxyHandler struct {
 }
 
 func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
-	logger.Printf("%s %s %s", req.RemoteAddr, req.Method, req.URL)
+	util.GetLogger().Debug(req.RemoteAddr + " " + req.Method + " " + req.URL.String())
 
 	req.RequestURI = ""
 	delHopHeaders(req.Header)
@@ -77,23 +76,23 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 
 	matching, err := p.spyconfigs.GetMatching(req.Header)
 	if err != nil && !errors.Is(err, spyconfigs.NoMatchingError) {
-		logger.Printf("Exception on get matching: %v", err)
+		util.GetLogger().Error("Exception on get matching", zap.Error(err))
 	}
 
 	var resp *http.Response
 	if !errors.Is(err, spyconfigs.NoMatchingError) {
-		logger.Printf("Match result: %v", matching)
+		util.GetLogger().Debug("Match result: " + matching)
 		httpRequest, err := httprequest.FromHttpRequest(req)
 		if err != nil {
 			http.Error(wr, "Server Error", http.StatusInternalServerError)
-			logger.Print("Failed to proxy request: ", err)
+			util.GetLogger().Error("Failed to proxy request", zap.Error(err))
 			return
 		}
 
 		p.requestChan[matching] <- httpRequest
 		respDto := <-p.responseChan
 		resp = respDto.ToHttpResponse()
-		logger.Printf("Resp: %v", resp)
+		util.GetLogger().Debug("Resp as " + string(resp.StatusCode))
 	} else {
 		client := &http.Client{}
 		req.URL.Scheme = p.target.Scheme
@@ -101,7 +100,7 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 		resp, err = client.Do(req)
 		if err != nil {
 			http.Error(wr, "Server Error", http.StatusInternalServerError)
-			logger.Print("Failed to proxy request: ", err)
+			util.GetLogger().Error("Failed to proxy request", zap.Error(err))
 			return
 		}
 	}
@@ -115,10 +114,10 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 }
 
 func Start(requestChan map[string]chan *httprequest.HttpRequestDto, responseChan chan *httpresponse.HttpResponseDto, configs *spyconfigs.SpyConfigs, port int, targetRaw string) {
-	logger.Printf("Proxying request to: %s", targetRaw)
+	util.GetLogger().Info("Proxying request to: " + targetRaw)
 	target, err := url.Parse(targetRaw)
 	if err != nil {
-		logger.Fatalf("Failed to parse target: %v", err)
+		util.GetLogger().Error("Failed to parse target", zap.Error(err))
 	}
 
 	s := &http.Server{
@@ -131,6 +130,6 @@ func Start(requestChan map[string]chan *httprequest.HttpRequestDto, responseChan
 			responseChan: responseChan,
 		},
 	}
-	logger.Printf("Listening on %s", s.Addr)
-	logger.Println(s.ListenAndServe())
+	util.GetLogger().Info("Listening on " + s.Addr)
+	util.GetLogger().Error("", zap.Error(s.ListenAndServe()))
 }

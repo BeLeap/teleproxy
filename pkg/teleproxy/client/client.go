@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -12,13 +11,13 @@ import (
 
 	"beleap.dev/teleproxy/pkg/teleproxy/dto/httprequest"
 	"beleap.dev/teleproxy/pkg/teleproxy/dto/httpresponse"
+	"beleap.dev/teleproxy/pkg/teleproxy/util"
 	pb "beleap.dev/teleproxy/protobuf"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 )
-
-var logger = log.New(os.Stdout, "[client] ", log.LstdFlags|log.Lmicroseconds)
 
 func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, apikey string, key string, value string, target string, useInsecure bool) {
 	var opts []grpc.DialOption
@@ -34,7 +33,7 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 	}
 	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {
-		logger.Fatalf("Failed to dial grpc server: %v", err)
+		util.GetLogger().Error("Failed to dial grpc server", zap.Error(err))
 		os.Exit(1)
 	}
 	defer conn.Close()
@@ -47,22 +46,23 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 		HeaderValue: value,
 	})
 	if err != nil {
-		logger.Fatalf("Failed to call client.Register: %v", err)
+		util.GetLogger().Error("Failed to call client.Register", zap.Error(err))
+    os.Exit(1)
 	}
-	logger.Printf("Registered with Id: %s", config.Id)
+	util.GetLogger().Info("Registered with Id: " + config.Id)
 	wg.Add(1)
 	defer func() {
 		client.Deregister(context.Background(), &pb.DeregisterRequest{
 			ApiKey: apikey,
 			Id:     config.Id,
 		})
-		logger.Printf("Deregistered with Id: %s", config.Id)
+		util.GetLogger().Info("Deregistered with Id: " + config.Id)
 		wg.Done()
 	}()
 
 	stream, err := client.Listen(ctx)
 	if err != nil {
-		logger.Fatalf("Failed to call client.Listen: %v", err)
+		util.GetLogger().Error("Failed to call client.Listen", zap.Error(err))
 		os.Exit(1)
 	}
 	stream.Send(&pb.ListenRequest{
@@ -82,7 +82,7 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 				break
 			}
 			if err != nil {
-				logger.Printf("Failed to listen: %v", err)
+				util.GetLogger().Error("Failed to listen", zap.Error(err))
 				return
 			}
 
@@ -90,27 +90,27 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 			if err != nil {
 				stream.Send(httpresponse.InternalServerError.ToPb(apikey, config.Id))
 				stream.CloseSend()
-				logger.Printf("Failed convert to dto: %v", err)
+				util.GetLogger().Error("Failed convert to dto", zap.Error(err))
 				break
 			}
-			logger.Printf("Handling request: %s %s", httpRequestDto.Method, httpRequestDto.Url)
+			util.GetLogger().Info("Handling request: " + httpRequestDto.Method + " " + httpRequestDto.Url.String())
 
 			httpReq, err := httpRequestDto.ToHttpRequest()
 			if err != nil {
 				stream.Send(httpresponse.InternalServerError.ToPb(apikey, config.Id))
 				stream.CloseSend()
-				logger.Printf("Failed to create request: %v", err)
+				util.GetLogger().Error("Failed to create request", zap.Error(err))
 				break
 			}
 
-			logger.Printf("%s %s %s", httpReq.RemoteAddr, httpReq.Method, httpReq.URL)
+			util.GetLogger().Info(httpReq.RemoteAddr + " " + httpReq.Method + " " + httpReq.URL.String())
 			targetURL, err := url.Parse(target)
 			httpReq.URL.Scheme = targetURL.Scheme
 			httpReq.URL.Host = targetURL.Host
 			if err != nil {
 				stream.Send(httpresponse.InternalServerError.ToPb(apikey, config.Id))
 				stream.CloseSend()
-				logger.Printf("Failed to parse target info: %v", err)
+				util.GetLogger().Error("Failed to parse target info", zap.Error(err))
 				break
 			}
 
@@ -118,7 +118,7 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 			if err != nil {
 				stream.Send(httpresponse.InternalServerError.ToPb(apikey, config.Id))
 				stream.CloseSend()
-				logger.Printf("Failed to handle request: %v", err)
+				util.GetLogger().Error("Failed to handle request", zap.Error(err))
 				break
 			}
 
@@ -126,7 +126,7 @@ func StartListen(ctx context.Context, wg *sync.WaitGroup, serverAddr string, api
 			if err != nil {
 				stream.Send(httpresponse.InternalServerError.ToPb(apikey, config.Id))
 				stream.CloseSend()
-				logger.Printf("Failed to handle request: %v", err)
+				util.GetLogger().Error("Failed to handle request", zap.Error(err))
 				break
 			}
 
@@ -149,7 +149,7 @@ func Dump(serverAddr string, apikey string, useInsecure bool) {
 	}
 	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {
-		logger.Fatalf("Failed to dial grpc server: %v", err)
+		util.GetLogger().Error("Failed to dial grpc server", zap.Error(err))
 		os.Exit(1)
 	}
 	defer conn.Close()
@@ -160,10 +160,11 @@ func Dump(serverAddr string, apikey string, useInsecure bool) {
 		ApiKey: apikey,
 	})
 	if err != nil {
-		logger.Fatalf("Failed to call client.Dump: %v", err)
+		util.GetLogger().Error("Failed to call client.Dump", zap.Error(err))
+		os.Exit(1)
 	}
 
-	logger.Print(resp)
+	util.GetLogger().Debug(resp.String())
 }
 
 func Flush(serverAddr string, apikey string, useInsecure bool) {
@@ -180,7 +181,7 @@ func Flush(serverAddr string, apikey string, useInsecure bool) {
 	}
 	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {
-		logger.Fatalf("Failed to dial grpc server: %v", err)
+		util.GetLogger().Error("Failed to dial grpc server", zap.Error(err))
 		os.Exit(1)
 	}
 	defer conn.Close()
@@ -191,6 +192,6 @@ func Flush(serverAddr string, apikey string, useInsecure bool) {
 		ApiKey: apikey,
 	})
 	if err != nil {
-		logger.Fatalf("Failed to call client.Dump: %v", err)
+		util.GetLogger().Error("Failed to call client.Dump", zap.Error(err))
 	}
 }

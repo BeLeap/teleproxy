@@ -3,16 +3,16 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
-	"os"
 	"sync"
 
 	"beleap.dev/teleproxy/pkg/teleproxy/dto/httprequest"
 	"beleap.dev/teleproxy/pkg/teleproxy/dto/httpresponse"
 	"beleap.dev/teleproxy/pkg/teleproxy/spyconfig"
 	"beleap.dev/teleproxy/pkg/teleproxy/spyconfigs"
+	"beleap.dev/teleproxy/pkg/teleproxy/util"
 	pb "beleap.dev/teleproxy/protobuf"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
@@ -20,8 +20,7 @@ import (
 )
 
 var (
-	logger                    = log.New(os.Stdout, "[server] ", log.LstdFlags|log.Lmicroseconds)
-	_      pb.TeleProxyServer = &teleProxyServer{}
+	_ pb.TeleProxyServer = &teleProxyServer{}
 )
 
 type teleProxyServer struct {
@@ -41,14 +40,14 @@ type teleProxyServer struct {
 }
 
 func (s *teleProxyServer) Health(ctx context.Context, req *pb.EchoRequest) (*pb.EchoResponse, error) {
-	logger.Print("Received Health Check")
+	util.GetLogger().Debug("Received Health Check")
 	return &pb.EchoResponse{}, nil
 }
 
 func (s *teleProxyServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	if req.ApiKey != s.apikey {
-		logger.Print("Not matching api key")
-		return nil, status.Error(codes.Unauthenticated, "Not matching api key")
+		util.GetLogger().Warn("Wrong api key")
+		return nil, status.Error(codes.Unauthenticated, "Wrong api key")
 	}
 
 	config := spyconfig.New(req.HeaderKey, req.HeaderValue)
@@ -61,8 +60,8 @@ func (s *teleProxyServer) Register(ctx context.Context, req *pb.RegisterRequest)
 
 func (s *teleProxyServer) Deregister(ctx context.Context, req *pb.DeregisterRequest) (*pb.DeregisterResponse, error) {
 	if req.ApiKey != s.apikey {
-		logger.Print("Not matching api key")
-		return nil, status.Error(codes.Unauthenticated, "Not matching api key")
+		util.GetLogger().Warn("Wrong api key")
+		return nil, status.Error(codes.Unauthenticated, "Wrong api key")
 	}
 
 	s.configs.RemoveSpyConfig(req.Id)
@@ -73,12 +72,15 @@ func (s *teleProxyServer) Deregister(ctx context.Context, req *pb.DeregisterRequ
 func (s *teleProxyServer) Listen(stream pb.TeleProxy_ListenServer) error {
 	initResp, err := stream.Recv()
 	if err != nil {
-		log.Printf("Failed to get request: %v", err)
+		util.GetLogger().Error(
+			"Failed to get request",
+			zap.Error(err),
+		)
 		return status.Error(codes.Internal, "")
 	}
 	if initResp.ApiKey != s.apikey {
-		log.Print("Not matching api key")
-		return status.Error(codes.Unauthenticated, "Not matching api key")
+		util.GetLogger().Warn("Wrong api key")
+		return status.Error(codes.Unauthenticated, "Wrong api key")
 	}
 
 	s.cancelWg.Add(1)
@@ -92,14 +94,17 @@ func (s *teleProxyServer) Listen(stream pb.TeleProxy_ListenServer) error {
 	for {
 		select {
 		case <-s.ctx.Done():
-			logger.Printf("Flushed %s", initResp.Id)
+			util.GetLogger().Info("Flushed" + initResp.Id)
 			return status.Error(codes.Aborted, "Flushed")
 		case request := <-requestChan:
-			logger.Printf("Handling proxing request to %s", initResp.Id)
+			util.GetLogger().Debug("Handling proxing request to " + initResp.Id)
 			stream.Send(request.ToPb())
 			resp, err := stream.Recv()
 			if err != nil {
-				logger.Printf("Failed to get response: %v", err)
+				util.GetLogger().Error(
+					"Failed to get response",
+					zap.Error(err),
+				)
 			}
 
 			s.responseChan <- httpresponse.FromPb(resp)
@@ -109,13 +114,16 @@ func (s *teleProxyServer) Listen(stream pb.TeleProxy_ListenServer) error {
 
 func (s *teleProxyServer) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpResponse, error) {
 	if req.ApiKey != s.apikey {
-		logger.Print("Not matching api key")
-		return nil, status.Error(codes.Unauthenticated, "Not matching api key")
+		util.GetLogger().Warn("Wrong api key")
+		return nil, status.Error(codes.Unauthenticated, "Wrong api key")
 	}
 
 	res, err := s.configs.DumpSpyConfigs()
 	if err != nil {
-		logger.Printf("Failed to dump spy configs: %v", err)
+		util.GetLogger().Error(
+			"Failed to dump spy configs",
+			zap.Error(err),
+		)
 		return nil, status.Error(codes.Internal, "Failed to dump spy configs")
 	}
 	resp := &pb.DumpResponse{
@@ -126,8 +134,8 @@ func (s *teleProxyServer) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.Du
 
 func (s *teleProxyServer) Flush(ctx context.Context, req *pb.FlushRequest) (*pb.FlushResponse, error) {
 	if req.ApiKey != s.apikey {
-		logger.Print("Not matching api key")
-		return nil, status.Error(codes.Unauthenticated, "Not matching api key")
+		util.GetLogger().Warn("Wrong api key")
+		return nil, status.Error(codes.Unauthenticated, "Wrong api key")
 	}
 
 	s.configs.FlushSpyConfigs()
@@ -143,7 +151,11 @@ func (s *teleProxyServer) Flush(ctx context.Context, req *pb.FlushRequest) (*pb.
 func Start(requestChan map[string]chan *httprequest.HttpRequestDto, responseChan chan *httpresponse.HttpResponseDto, configs *spyconfigs.SpyConfigs, port int, apikey string) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		logger.Fatalf("Failed to start server: %v", err)
+		util.GetLogger().Error(
+			"Failed to start server",
+			zap.Error(err),
+		)
+		return
 	}
 
 	grpcServer := grpc.NewServer()
@@ -161,7 +173,7 @@ func Start(requestChan map[string]chan *httprequest.HttpRequestDto, responseChan
 		apikey: apikey,
 	}
 	pb.RegisterTeleProxyServer(grpcServer, serv)
-	logger.Printf("Listening on %s", lis.Addr().String())
+	util.GetLogger().Info("Listening on " + lis.Addr().String())
 	reflection.Register(grpcServer)
-	logger.Println(grpcServer.Serve(lis))
+	util.GetLogger().Error("", zap.Error(grpcServer.Serve(lis)))
 }
