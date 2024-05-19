@@ -84,12 +84,12 @@ func (s *teleProxyServer) Listen(stream pb.TeleProxy_ListenServer) error {
 	s.cancelWg.Add(1)
 	defer s.cancelWg.Done()
 
-	for {
-		executeChan := make(chan bool)
-		s.mu.Lock()
-		s.streamMap[initResp.Id] = executeChan
-		s.mu.Unlock()
+	executeChan := make(chan bool)
+	s.mu.Lock()
+	s.streamMap[initResp.Id] = executeChan
+	s.mu.Unlock()
 
+	for {
 		select {
 		case <-s.ctx.Done():
 			logger.Printf("Flushed %s", initResp.Id)
