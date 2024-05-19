@@ -97,7 +97,7 @@ func (s *teleProxyServer) Listen(stream pb.TeleProxy_ListenServer) error {
 			util.GetLogger().Info("Flushed" + initResp.Id)
 			return status.Error(codes.Aborted, "Flushed")
 		case request := <-requestChan:
-			util.GetLogger().Debug("Handling proxing request to " + initResp.Id)
+			util.GetLogger().Debug("Handling spying request to " + initResp.Id)
 			stream.Send(request.ToPb())
 			resp, err := stream.Recv()
 			if err != nil {

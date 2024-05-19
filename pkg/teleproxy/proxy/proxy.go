@@ -85,7 +85,7 @@ func (p *proxyHandler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 		httpRequest, err := httprequest.FromHttpRequest(req)
 		if err != nil {
 			http.Error(wr, "Server Error", http.StatusInternalServerError)
-			util.GetLogger().Error("Failed to proxy request", zap.Error(err))
+			util.GetLogger().Error("Failed to proxy spied request", zap.Error(err))
 			return
 		}
 
