@@ -22,7 +22,11 @@ impl ProxyHttp for TeleProxyService {
         _session: &mut Session,
         _ctx: &mut Self::CTX,
     ) -> Result<Box<HttpPeer>> {
-        let peer = Box::new(HttpPeer::new((self.target.ip, self.target.port), false, "".to_string()));
+        let peer = Box::new(HttpPeer::new(
+            (self.target.ip, self.target.port),
+            false,
+            "".to_string(),
+        ));
         Ok(peer)
     }
 }
