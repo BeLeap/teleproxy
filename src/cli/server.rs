@@ -15,7 +15,7 @@ pub struct ServerArgs {
 }
 
 pub fn handler(args: &ServerArgs) {
-    let target_ip: IpAddr = args.target_ip.parse().unwrap();
+    let target_ip: IpAddr = args.target_ip.parse().expect("Invalid target_ip");
 
     let mut proxy_server = Server::new(None).unwrap();
     proxy_server.bootstrap();
