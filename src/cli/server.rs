@@ -7,10 +7,10 @@ use crate::proxy::{Target, TeleProxyService};
 
 #[derive(Args)]
 pub struct ServerArgs {
-    #[arg(short = 'i', long)]
+    #[arg(long)]
     target_ip: String,
 
-    #[arg(short = 'p', long)]
+    #[arg(long, default_value_t = 80)]
     target_port: u16,
 }
 
