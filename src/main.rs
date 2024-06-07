@@ -1,12 +1,12 @@
 mod cli;
 
 use clap::Parser;
-use pingora::prelude::*;
 
 fn main() {
     let cli = cli::Cli::parse();
 
-    let mut proxy = Server::new(None).unwrap();
-    proxy.bootstrap();
-    proxy.run_forever();
+    match &cli.command {
+        cli::Command::Client(_args) => {},
+        cli::Command::Server(args) => cli::server::handler(args),
+    }
 }

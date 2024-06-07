@@ -1,16 +1,17 @@
+pub mod client;
+pub mod server;
+
 use clap::{Parser, Subcommand};
-mod client;
-mod server;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
-    command: Command
+    pub command: Command
 }
 
 #[derive(Subcommand)]
-enum Command {
+pub enum Command {
     Client(client::ClientArgs),
     Server(server::ServerArgs),
 }
