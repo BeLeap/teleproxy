@@ -2021,6 +2021,7 @@ dependencies = [
  "async-trait",
  "clap 4.5.6",
  "pingora",
+ "pingora-proxy",
 ]
 
 [[package]]

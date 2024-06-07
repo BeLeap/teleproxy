@@ -1,3 +1,4 @@
+mod proxy;
 mod cli;
 
 use clap::Parser;

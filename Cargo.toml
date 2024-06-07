@@ -7,3 +7,4 @@ edition = "2021"
 async-trait="0.1"
 clap = { version = "4.5.6", features = ["derive"] }
 pingora = { version = "0.2", features = [ "lb" ] }
+pingora-proxy = "0.2.0"
