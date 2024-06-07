@@ -7,11 +7,14 @@ use crate::proxy::{Target, TeleProxyService};
 
 #[derive(Args)]
 pub struct ServerArgs {
-    #[arg(long)]
+    #[arg(long, default_value_t = String::from("127.0.0.1"))]
     target_ip: String,
 
     #[arg(long, default_value_t = 80)]
     target_port: u16,
+
+    #[arg(short, long, default_value_t = 2144)]
+    port: u16,
 }
 
 pub fn handler(args: &ServerArgs) {
@@ -29,7 +32,7 @@ pub fn handler(args: &ServerArgs) {
             },
         },
     );
-    teleproxy_service.add_tcp("0.0.0.0:6188");
+    teleproxy_service.add_tcp(&format!("0.0.0.0:{}", args.port).to_string());
 
     proxy_server.add_service(teleproxy_service);
     proxy_server.run_forever();
