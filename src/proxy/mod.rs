@@ -29,4 +29,8 @@ impl ProxyHttp for TeleProxyService {
         ));
         Ok(peer)
     }
+
+    async fn request_filter(&self, _session: &mut Session, _ctx: &mut Self::CTX) -> Result<bool> {
+        Ok(false)
+    }
 }
