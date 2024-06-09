@@ -3,7 +3,7 @@ use std::net::IpAddr;
 use clap::Args;
 use pingora::prelude::*;
 
-use crate::proxy::{Target, TeleProxyService};
+use crate::{forwardconfig::store::ForwardConfigStore, proxy::{Target, TeleproxyService}};
 
 #[derive(Args)]
 pub struct ServerArgs {
@@ -23,14 +23,13 @@ pub fn handler(args: &ServerArgs) {
     let mut proxy_server = Server::new(None).unwrap();
     proxy_server.bootstrap();
 
+    let forward_config_store = ForwardConfigStore::new();
+
+    let teleproxy_service = TeleproxyService::new(forward_config_store, Target { ip: target_ip, port: args.target_port });
+
     let mut teleproxy_service = pingora_proxy::http_proxy_service(
         &proxy_server.configuration,
-        TeleProxyService {
-            target: Target {
-                ip: target_ip,
-                port: args.target_port,
-            },
-        },
+        teleproxy_service,
     );
     teleproxy_service.add_tcp(&format!("0.0.0.0:{}", args.port).to_string());
 

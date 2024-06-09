@@ -1,3 +1,5 @@
+mod dto;
+mod forwardconfig;
 mod proxy;
 mod cli;
 

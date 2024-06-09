@@ -703,6 +703,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "header"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3f7526f3735208dd96775b34a3cb77ba33ca7264b94b55a7901c6d1dff3467f"
+
+[[package]]
 name = "heck"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -996,6 +1002,15 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "nanoid"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3ffa00dec017b5b1a8b7cf5e2c008bfda1aa7e0697ac1508b491fdf2622fb4d8"
+dependencies = [
+ "rand",
 ]
 
 [[package]]
@@ -2020,6 +2035,9 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "clap 4.5.6",
+ "header",
+ "http 1.1.0",
+ "nanoid",
  "pingora",
  "pingora-proxy",
 ]
