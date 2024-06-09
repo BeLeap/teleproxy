@@ -3,7 +3,7 @@ use std::net::IpAddr;
 use clap::Args;
 use pingora::prelude::*;
 
-use crate::{forwardconfig::store::ForwardConfigStore, proxy::{Target, TeleproxyService}};
+use crate::{forwardconfig::store::ForwardConfigStore, proxy::{Target, TeleproxyService}, server};
 
 #[derive(Args)]
 pub struct ServerArgs {
@@ -15,15 +15,24 @@ pub struct ServerArgs {
 
     #[arg(short, long, default_value_t = 2144)]
     port: u16,
+
+    #[arg(long, default_value_t = 2145)]
+    server_port: u16,
 }
 
 pub fn handler(args: &ServerArgs) {
     let target_ip: IpAddr = args.target_ip.parse().expect("Invalid target_ip");
 
+    let forward_config_store = ForwardConfigStore::new();
+
+    let server_runtime = tokio::runtime::Runtime::new().expect("Failed to spawn server runtime");
+
+    let server_port = args.server_port;
+    server_runtime.spawn(async move {
+        server::run(server_port)
+    });
     let mut proxy_server = Server::new(None).unwrap();
     proxy_server.bootstrap();
-
-    let forward_config_store = ForwardConfigStore::new();
 
     let teleproxy_service = TeleproxyService::new(forward_config_store, Target { ip: target_ip, port: args.target_port });
 
