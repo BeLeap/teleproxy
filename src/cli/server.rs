@@ -31,7 +31,7 @@ pub fn handler(args: &ServerArgs) {
     let server_port = args.server_port;
     let forward_config_store_server = Arc::clone(&forward_config_store_arc);
     server_runtime.spawn(async move {
-        server::run(server_port, forward_config_store_server)
+        let _ = server::run(server_port, forward_config_store_server).await;
     });
     let mut proxy_server = Server::new(None).unwrap();
     proxy_server.bootstrap();

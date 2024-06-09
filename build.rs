@@ -1,4 +1,10 @@
+use std::{env, path::PathBuf};
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    tonic_build::compile_protos("proto/teleproxy.proto")?;
+    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+    tonic_build::configure()
+        .file_descriptor_set_path(out_dir.join("teleproxy_descriptor.bin"))
+        .compile(&["proto/teleproxy.proto"], &["proto"])
+        .unwrap();
     Ok(())
 }
