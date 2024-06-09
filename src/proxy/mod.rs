@@ -16,13 +16,13 @@ pub struct Target {
 }
 
 pub struct TeleproxyService {
-    forward_config_store: ForwardConfigStore,
+    forward_config_store: Arc<ForwardConfigStore>,
 
     target: Target,
 }
 
 impl TeleproxyService {
-    pub fn new(forward_config_store: ForwardConfigStore, target: Target) -> Self {
+    pub fn new(forward_config_store: Arc<ForwardConfigStore>, target: Target) -> Self {
         Self {
             forward_config_store,
             target,
