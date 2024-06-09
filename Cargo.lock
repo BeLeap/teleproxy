@@ -2272,6 +2272,7 @@ dependencies = [
  "pingora-proxy",
  "prost",
  "tokio",
+ "tokio-stream",
  "tonic",
  "tonic-build",
 ]
