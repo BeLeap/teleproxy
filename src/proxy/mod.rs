@@ -8,7 +8,7 @@ use pingora::prelude::*;
 
 use crate::{
     dto::{Request, Response},
-    forwardconfig::{header::Header, store::ForwardConfigStore},
+    forwardconfig::{self, header::Header, store::ForwardConfigStore},
 };
 
 pub struct Target {
@@ -58,7 +58,7 @@ impl ProxyHttp for TeleproxyService {
                 self.forward_config_store
                     .find_by_header(Header::from_pair(header))
             })
-            .collect::<Vec<Option<Arc<Mutex<Box<dyn Fn(Request) -> Response + Send + 'static>>>>>>()
+            .collect::<Vec<Option<Arc<Mutex<forwardconfig::config::Handler>>>>>()
             .last();
         Ok(false)
     }

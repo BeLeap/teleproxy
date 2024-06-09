@@ -7,9 +7,11 @@ use crate::dto::{Request, Response};
 
 use super::header::Header;
 
+pub type Handler = Box<dyn Fn(Request) -> Response + Send + 'static>;
+
 pub struct ForwardConfig {
     pub header: Header,
-    pub handler: Option<Arc<Mutex<Box<dyn Fn(Request) -> Response + Send + 'static>>>>,
+    pub handler: Option<Arc<Mutex<Handler>>>,
 }
 
 impl Hash for ForwardConfig {

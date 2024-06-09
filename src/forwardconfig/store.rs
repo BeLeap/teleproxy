@@ -1,8 +1,6 @@
 use std::{collections::HashSet, sync::{Arc, Mutex}};
 
-use crate::dto::{Request, Response};
-
-use super::{config::ForwardConfig, header::Header, };
+use super::{config::{self, ForwardConfig}, header::Header, };
 
 pub struct ForwardConfigStore {
     configs: Arc<Mutex<HashSet<ForwardConfig>>>,
@@ -17,7 +15,7 @@ impl ForwardConfigStore {
     pub fn insert(
         &self,
         header: Header,
-        handler: Box<dyn Fn(Request) -> Response + Send + 'static>,
+        handler: config::Handler,
     ) {
         let config = ForwardConfig {
             header,
@@ -31,17 +29,14 @@ impl ForwardConfigStore {
     pub fn find_by_header(
         &self,
         header: Header,
-    ) -> Option<Arc<Mutex<Box<dyn Fn(Request) -> Response + Send>>>> {
+    ) -> Option<Arc<Mutex<config::Handler>>> {
         let configs = self.configs.lock().unwrap();
 
         match configs.get(&ForwardConfig {
             header,
             handler: None,
         }) {
-            Some(config) => match &config.handler {
-                Some(handler) => Some(handler.clone()),
-                None => None,
-            },
+            Some(config) => config.handler.clone(),
             None => None,
         }
     }
