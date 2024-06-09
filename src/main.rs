@@ -1,6 +1,7 @@
 mod dto;
 mod forwardconfig;
 mod proxy;
+mod server;
 mod cli;
 
 use clap::Parser;
