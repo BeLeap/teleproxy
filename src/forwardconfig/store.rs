@@ -40,5 +40,11 @@ impl ForwardConfigStore {
             None => None,
         }
     }
+
+    pub fn list(&self) -> Vec<Header> {
+        let configs = &self.configs.lock().unwrap();
+
+        configs.iter().map(|config| config.header.clone()).collect()
+    }
 }
 

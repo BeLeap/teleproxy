@@ -4,11 +4,11 @@ use crate::forwardconfig::store::ForwardConfigStore;
 
 use super::teleproxy_proto;
 
-use log::trace;
 use tokio_stream::wrappers::ReceiverStream;
+use tonic::Status;
 
 pub struct TeleproxyImpl {
-    forward_config_store: Arc<ForwardConfigStore>
+    forward_config_store: Arc<ForwardConfigStore>,
 }
 
 impl TeleproxyImpl {
@@ -25,7 +25,7 @@ impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
         &self,
         _request: tonic::Request<teleproxy_proto::EchoRequest>,
     ) -> tonic::Result<tonic::Response<teleproxy_proto::EchoResponse>> {
-        trace!("gRPC Health Request Received");
+        log::trace!("gRPC Health Request Received");
         let response = teleproxy_proto::EchoResponse {};
         Ok(tonic::Response::new(response))
     }
@@ -56,7 +56,18 @@ impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
         &self,
         _request: tonic::Request<teleproxy_proto::DumpRequest>,
     ) -> Result<tonic::Response<teleproxy_proto::DumpResponse>, tonic::Status> {
-        unimplemented!()
+        let forward_config_store = Arc::clone(&self.forward_config_store);
+        let config_dump = serde_yml::to_string(&forward_config_store.list());
+
+        match config_dump {
+            Ok(config_dump) => Ok(tonic::Response::new(teleproxy_proto::DumpResponse {
+                dump: config_dump,
+            })),
+            Err(err) => {
+                log::error!("failed to dump config: {err}");
+                Err(Status::internal("failed to dump config"))
+            },
+        }
     }
 
     async fn flush(
