@@ -1,12 +1,10 @@
 mod service;
 
-use std::sync::Arc;
-
-use tonic::transport::Server;
-
-use crate::forwardconfig::store::ForwardConfigStore;
-
 use self::service::TeleproxyImpl;
+use crate::forwardconfig::store::ForwardConfigStore;
+use std::sync::Arc;
+use log::info;
+use tonic::transport::Server;
 
 pub mod teleproxy_proto {
     tonic::include_proto!("teleproxy");
@@ -24,8 +22,8 @@ pub async fn run(
         .build()
         .unwrap();
 
-    let addr = format!("[::1]:{}", port).parse()?;
-    println!("listening on {}", addr);
+    let addr = format!("[::]:{}", port).parse()?;
+    info!("listening on {}", addr);
 
     Server::builder()
         .add_service(teleproxy_proto::teleproxy_server::TeleproxyServer::new(
