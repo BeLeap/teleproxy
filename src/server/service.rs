@@ -1,10 +1,23 @@
+use std::sync::Arc;
+
+use crate::forwardconfig::store::ForwardConfigStore;
+
 use super::teleproxy_proto;
 
 use log::trace;
 use tokio_stream::wrappers::ReceiverStream;
 
-#[derive(Debug, Default)]
-pub struct TeleproxyImpl {}
+pub struct TeleproxyImpl {
+    forward_config_store: Arc<ForwardConfigStore>
+}
+
+impl TeleproxyImpl {
+    pub fn new(forward_config_store: Arc<ForwardConfigStore>) -> Self {
+        Self {
+            forward_config_store,
+        }
+    }
+}
 
 #[tonic::async_trait]
 impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {

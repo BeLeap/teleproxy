@@ -15,7 +15,7 @@ pub mod teleproxy_proto {
 
 pub async fn run(
     port: u16,
-    _config: Arc<ForwardConfigStore>,
+    forward_config_store: Arc<ForwardConfigStore>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let reflection_service = tonic_reflection::server::Builder::configure()
         .register_encoded_file_descriptor_set(teleproxy_proto::FILE_DESCRIPTOR_SET)
@@ -27,7 +27,7 @@ pub async fn run(
 
     Server::builder()
         .add_service(teleproxy_proto::teleproxy_server::TeleproxyServer::new(
-            TeleproxyImpl::default(),
+            TeleproxyImpl::new(forward_config_store),
         ))
         .add_service(reflection_service)
         .serve(addr)
