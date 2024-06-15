@@ -1,5 +1,6 @@
 use super::teleproxy_proto;
 
+use log::trace;
 use tokio_stream::wrappers::ReceiverStream;
 
 #[derive(Debug, Default)]
@@ -11,7 +12,9 @@ impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
         &self,
         _request: tonic::Request<teleproxy_proto::EchoRequest>,
     ) -> tonic::Result<tonic::Response<teleproxy_proto::EchoResponse>> {
-        unimplemented!()
+        trace!("gRPC Health Request Received");
+        let response = teleproxy_proto::EchoResponse {};
+        Ok(tonic::Response::new(response))
     }
 
     async fn register(
