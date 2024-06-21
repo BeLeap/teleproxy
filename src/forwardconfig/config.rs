@@ -1,17 +1,9 @@
-use std::{
-    hash::Hash,
-    sync::{Arc, Mutex},
-};
-
-use crate::dto::{Request, Response};
-
 use super::header::Header;
-
-pub type Handler = Box<dyn Fn(Request) -> Response + Send + 'static>;
+use std::hash::Hash;
 
 pub struct ForwardConfig {
     pub header: Header,
-    pub handler: Option<Arc<Mutex<Handler>>>,
+    pub id: String,
 }
 
 impl Hash for ForwardConfig {

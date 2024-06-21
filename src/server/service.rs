@@ -37,38 +37,18 @@ impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
         unimplemented!()
     }
 
-    type ListenStream = Pin<Box<dyn tokio_stream::Stream<Item = tonic::Result<teleproxy_proto::ListenResponse, tonic::Status>> + Send>>;
+    type ListenStream = Pin<
+        Box<
+            dyn tokio_stream::Stream<
+                    Item = tonic::Result<teleproxy_proto::ListenResponse, tonic::Status>,
+                > + Send,
+        >,
+    >;
     async fn listen(
         &self,
-        request: tonic::Request<tonic::Streaming<teleproxy_proto::ListenRequest>>,
+        _request: tonic::Request<tonic::Streaming<teleproxy_proto::ListenRequest>>,
     ) -> tonic::Result<tonic::Response<Self::ListenStream>> {
-        let mut in_stream = request.into_inner();
-        let (tx, rx) = tokio::sync::mpsc::channel(128);
-
-        tokio::spawn(async move {
-            while let Some(result) = in_stream.next().await {
-                match result {
-                    Ok(_v) => tx
-                        .send(Ok(teleproxy_proto::ListenResponse {
-                            method: "".to_string(),
-                            url: "".to_string(),
-                            header: HashMap::new(),
-                            body: Vec::new(),
-                        }))
-                        .await
-                        .expect(""),
-                    Err(err) => match tx.send(Err(err)).await {
-                        Ok(_) => (),
-                        Err(_err) => break,
-                    },
-                }
-            }
-        });
-
-        let out_stream = ReceiverStream::new(rx);
-        Ok(tonic::Response::new(
-            Box::pin(out_stream) as Self::ListenStream
-        ))
+        todo!()
     }
 
     async fn deregister(
