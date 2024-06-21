@@ -49,16 +49,17 @@ impl ProxyHttp for TeleproxyService {
     }
 
     async fn request_filter(&self, session: &mut Session, _ctx: &mut Self::CTX) -> Result<bool> {
-        let handler = session
-            .req_header()
-            .headers
-            .iter()
-            .map(|header| {
-                self.forward_config_store
-                    .find_by_header(Header::from_pair(header))
-            })
-            .collect::<Vec<Option<Arc<Mutex<forwardconfig::config::Handler>>>>>()
-            .last();
-        Ok(false)
+        todo!()
+        // let handler = session
+        //     .req_header()
+        //     .headers
+        //     .iter()
+        //     .map(|header| {
+        //         self.forward_config_store
+        //             .find_by_header(Header::from_pair(header))
+        //     })
+        //     .collect::<Vec<Option<Arc<Mutex<forwardconfig::config::Handler>>>>>()
+        //     .last();
+        // Ok(false)
     }
 }
