@@ -1,6 +1,12 @@
-use std::{collections::HashSet, sync::{Arc, Mutex}};
+use std::{
+    collections::HashSet,
+    sync::{Arc, Mutex},
+};
 
-use super::{config::{self, ForwardConfig}, header::Header, };
+use super::{
+    config::ForwardConfig,
+    header::Header,
+};
 
 pub struct ForwardConfigStore {
     configs: Arc<Mutex<HashSet<ForwardConfig>>>,
@@ -12,33 +18,25 @@ impl ForwardConfigStore {
         ForwardConfigStore { configs }
     }
 
-    pub fn insert(
-        &self,
-        header: Header,
-        handler: config::Handler,
-    ) {
+    pub fn insert(&self, header: Header, id: &String) {
         let config = ForwardConfig {
             header,
-            handler: Some(Arc::new(Mutex::new(handler))),
+            id: id.to_string(),
         };
 
         let mut configs = self.configs.lock().unwrap();
         configs.insert(config);
     }
 
-    pub fn find_by_header(
-        &self,
-        header: Header,
-    ) -> Option<Arc<Mutex<config::Handler>>> {
+    pub fn find_by_header(&self, header: Header) -> Option<String> {
         let configs = self.configs.lock().unwrap();
 
-        match configs.get(&ForwardConfig {
-            header,
-            handler: None,
-        }) {
-            Some(config) => config.handler.clone(),
-            None => None,
-        }
+        configs
+            .get(&ForwardConfig {
+                header,
+                id: "".to_string(),
+            })
+            .map(|matching| matching.id.clone())
     }
 
     pub fn list(&self) -> Vec<Header> {
@@ -47,4 +45,3 @@ impl ForwardConfigStore {
         configs.iter().map(|config| config.header.clone()).collect()
     }
 }
-

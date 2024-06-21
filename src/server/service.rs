@@ -1,5 +1,8 @@
 use super::teleproxy_proto;
-use crate::forwardconfig::store::ForwardConfigStore;
+use crate::{
+    dto,
+    forwardconfig::{header::Header, store::ForwardConfigStore},
+};
 use std::{pin::Pin, sync::Arc};
 use tonic::Status;
 
@@ -28,9 +31,17 @@ impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
 
     async fn register(
         &self,
-        _request: tonic::Request<teleproxy_proto::RegisterRequest>,
+        request: tonic::Request<teleproxy_proto::RegisterRequest>,
     ) -> tonic::Result<tonic::Response<teleproxy_proto::RegisterResponse>> {
-        unimplemented!()
+        let request = request.into_inner();
+        let id = ulid::Ulid::new().to_string();
+
+        self.forward_config_store
+            .insert(Header::new(request.header_key, request.header_value), &id);
+
+        Ok(tonic::Response::new(teleproxy_proto::RegisterResponse {
+            id,
+        }))
     }
 
     type ListenStream = Pin<
