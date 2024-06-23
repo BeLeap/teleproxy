@@ -19,7 +19,7 @@ pub struct ClientArgs {
 }
 
 pub fn handler(args: &ClientArgs) {
-    tokio::runtime::Builder::new_current_thread()
+    tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
         .unwrap()
@@ -42,5 +42,9 @@ pub fn handler(args: &ClientArgs) {
             )
             .await
             .unwrap();
+            log::info!("clien registered with id: {}", id);
+
+            let _ = client::deregister(&mut teleproxy_client, &args.api_key, &id).await;
+            log::info!("clien deregistered with id: {}", id);
         });
 }

@@ -3,7 +3,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use crate::dto::header::Header;
+use crate::dto::{self, header::Header};
 
 pub struct ForwardConfigStore {
     configs: Arc<Mutex<HashMap<Header, String>>>,
@@ -27,14 +27,17 @@ impl ForwardConfigStore {
     }
 
     pub fn remove_by_id(&self, id: &String) {
-        let configs = self.configs.lock().unwrap();
+        let mut matching_header: Option<dto::header::Header> = None;
+        {
+            let configs = self.configs.lock().unwrap();
 
-        let matching_configs = configs.iter().find(|entry| entry.1 == id);
-
+            if let Some(matching) = configs.iter().find(|entry| entry.1 == id) {
+                matching_header = Some(matching.0.clone());
+            };
+        }
         let mut configs = self.configs.lock().unwrap();
-
-        if let Some(matching_configs) = matching_configs {
-            configs.remove(matching_configs.0);
+        if let Some(matching) = matching_header {
+            configs.remove(&matching);
         }
     }
 
