@@ -1,10 +1,11 @@
 mod cli;
+mod client;
 mod dto;
 mod forwardconfig;
 mod forwardhandler;
+mod proto;
 mod proxy;
 mod server;
-mod client;
 
 use clap::Parser;
 use env_logger::Env;

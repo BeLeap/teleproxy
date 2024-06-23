@@ -1,8 +1,7 @@
 pub mod header;
 
 use http::StatusCode;
-
-use crate::server::teleproxy_pb;
+use crate::proto;
 
 use self::header::Header;
 
@@ -19,7 +18,7 @@ pub struct Response {
 }
 
 impl Response {
-    pub fn from_pb(pb: teleproxy_pb::ListenRequest) -> Self {
+    pub fn from_pb(pb: proto::teleproxy::ListenRequest) -> Self {
         let downcast_status_code = match u16::try_from(pb.status_code) {
             Ok(v) => v,
             Err(e) => {

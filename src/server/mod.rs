@@ -1,13 +1,7 @@
-pub mod teleproxy_pb {
-    tonic::include_proto!("teleproxy");
-
-    pub(crate) const FILE_DESCRIPTOR_SET: &[u8] =
-        tonic::include_file_descriptor_set!("teleproxy_descriptor");
-}
 mod service;
 
 use self::service::TeleproxyImpl;
-use crate::{forwardconfig::store::ForwardConfigStore, forwardhandler::ForwardHandler};
+use crate::{forwardconfig::store::ForwardConfigStore, forwardhandler::ForwardHandler, proto};
 use log::info;
 use std::sync::Arc;
 use tonic::transport::Server;
@@ -18,14 +12,14 @@ pub async fn run(
     forward_handler: Arc<ForwardHandler>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let reflection_service = tonic_reflection::server::Builder::configure()
-        .register_encoded_file_descriptor_set(teleproxy_pb::FILE_DESCRIPTOR_SET)
+        .register_encoded_file_descriptor_set(proto::teleproxy::FILE_DESCRIPTOR_SET)
         .build()
         .unwrap();
 
     let addr = format!("[::]:{}", port).parse()?;
     info!("listening port: {}", port);
 
-    let svc = teleproxy_pb::teleproxy_server::TeleproxyServer::with_interceptor(
+    let svc = proto::teleproxy::teleproxy_server::TeleproxyServer::with_interceptor(
         TeleproxyImpl {
             forward_config_store,
             forward_handler,
