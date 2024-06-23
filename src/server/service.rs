@@ -57,9 +57,12 @@ impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
 
     async fn deregister(
         &self,
-        _request: tonic::Request<teleproxy_proto::DeregisterRequest>,
+        request: tonic::Request<teleproxy_proto::DeregisterRequest>,
     ) -> tonic::Result<tonic::Response<teleproxy_proto::DeregisterResponse>> {
-        unimplemented!()
+        let request = request.into_inner();
+        self.forward_config_store.remove_by_id(&request.id);
+
+        Ok(tonic::Response::new(teleproxy_proto::DeregisterResponse {}))
     }
 
     async fn dump(
