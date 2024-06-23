@@ -1,8 +1,5 @@
 use super::teleproxy_proto;
-use crate::{
-    dto,
-    forwardconfig::{header::Header, store::ForwardConfigStore},
-};
+use crate::forwardconfig::{header::Header, store::ForwardConfigStore};
 use std::{pin::Pin, sync::Arc};
 use tonic::Status;
 

@@ -23,7 +23,7 @@ impl ForwardConfigStore {
     pub fn find_by_header(&self, header: Header) -> Option<String> {
         let configs = self.configs.lock().unwrap();
 
-        configs.get(&header).map(|id| id.clone())
+        configs.get(&header).cloned()
     }
 
     pub fn remove_by_id(&self, id: &String) {
@@ -33,12 +33,15 @@ impl ForwardConfigStore {
 
         let mut configs = self.configs.lock().unwrap();
 
-        match matching_configs {
-            Some(matching_configs) => {
-                configs.remove(matching_configs.0);
-            }
-            None => {}
+        if let Some(matching_configs) = matching_configs {
+            configs.remove(matching_configs.0);
         }
+    }
+
+    pub fn list(&self) -> HashMap<Header, String> {
+        let configs = self.configs.lock().unwrap();
+
+        configs.clone()
     }
 }
 
