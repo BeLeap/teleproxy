@@ -1,45 +1,44 @@
 use std::{
-    collections::HashSet,
+    collections::HashMap,
     sync::{Arc, Mutex},
 };
 
-use super::{config::ForwardConfig, header::Header};
+use super::header::Header;
 
 pub struct ForwardConfigStore {
-    configs: Arc<Mutex<HashSet<ForwardConfig>>>,
+    configs: Arc<Mutex<HashMap<Header, String>>>,
 }
 
 impl ForwardConfigStore {
     pub fn new() -> Self {
-        let configs = Arc::new(Mutex::new(HashSet::new()));
+        let configs = Arc::new(Mutex::new(HashMap::new()));
         ForwardConfigStore { configs }
     }
 
     pub fn insert(&self, header: Header, id: &String) {
-        let config = ForwardConfig {
-            header,
-            id: id.to_string(),
-        };
-
         let mut configs = self.configs.lock().unwrap();
-        configs.insert(config);
+        configs.insert(header, id.to_string());
     }
 
     pub fn find_by_header(&self, header: Header) -> Option<String> {
         let configs = self.configs.lock().unwrap();
 
-        configs
-            .get(&ForwardConfig {
-                header,
-                id: "".to_string(),
-            })
-            .map(|matching| matching.id.clone())
+        configs.get(&header).map(|id| id.clone())
     }
 
-    pub fn list(&self) -> Vec<Header> {
-        let configs = &self.configs.lock().unwrap();
+    pub fn remove_by_id(&self, id: &String) {
+        let configs = self.configs.lock().unwrap();
 
-        configs.iter().map(|config| config.header.clone()).collect()
+        let matching_configs = configs.iter().find(|entry| entry.1 == id);
+
+        let mut configs = self.configs.lock().unwrap();
+
+        match matching_configs {
+            Some(matching_configs) => {
+                configs.remove(matching_configs.0);
+            }
+            None => {}
+        }
     }
 }
 
