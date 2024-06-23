@@ -4,7 +4,6 @@ use crate::{
     forwardconfig::{header::Header, store::ForwardConfigStore},
     forwardhandler::ForwardHandler,
 };
-use prost::Message;
 use std::{pin::Pin, sync::Arc};
 use tokio_stream::{wrappers::ReceiverStream, StreamExt};
 use tonic::Status;

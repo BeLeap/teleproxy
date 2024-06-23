@@ -9,10 +9,7 @@ pub struct Header {
 
 impl Header {
     pub fn new(name: String, value: String) -> Self {
-        Self {
-            name,
-            value,
-        }
+        Self { name, value }
     }
 
     pub fn from_pair((name, value): (&HeaderName, &HeaderValue)) -> Self {

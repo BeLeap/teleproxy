@@ -6,9 +6,7 @@ use std::{
 use async_trait::async_trait;
 use pingora::prelude::*;
 
-use crate::
-    forwardconfig::{self, header::Header, store::ForwardConfigStore}
-;
+use crate::forwardconfig::{self, header::Header, store::ForwardConfigStore};
 
 pub struct Target {
     pub ip: IpAddr,
