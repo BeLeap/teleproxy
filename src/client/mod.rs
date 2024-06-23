@@ -6,18 +6,18 @@ pub type ClientResult<T> = Result<T, ClientError>;
 #[derive(Debug)]
 pub enum ClientError {
     RegisterError,
-    DeregisterError(String),
+    DeregisterError,
 }
 
 pub async fn register(
     client: &mut Client,
-    api_key: &String,
+    api_key: String,
     header_key: String,
     header_value: String,
 ) -> ClientResult<String> {
     match client
         .register(tonic::Request::new(proto::teleproxy::RegisterRequest {
-            api_key: api_key.to_string(),
+            api_key,
             header_key,
             header_value,
         }))
@@ -34,18 +34,22 @@ pub async fn register(
     }
 }
 
-pub async fn deregister(client: &mut Client, api_key: &String, id: &String) -> ClientResult<()> {
+pub async fn deregister(client: &mut Client, api_key: String, id: String) -> ClientResult<()> {
     match client
         .deregister(tonic::Request::new(proto::teleproxy::DeregisterRequest {
-            api_key: api_key.to_string(),
-            id: id.to_string(),
+            api_key,
+            id,
         }))
         .await
     {
         Ok(_) => Ok(()),
         Err(err) => {
-            log::error!("failed to deregister with id: {}, err: {:?}", id, err);
-            Err(ClientError::DeregisterError(id.to_string()))
+            log::error!("failed to deregister with err: {:?}", err);
+            Err(ClientError::DeregisterError)
         }
     }
+}
+
+pub async fn listen(client: &mut Client, api_key: &String, target: &String) -> ClientResult<()> {
+    unimplemented!()
 }
