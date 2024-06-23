@@ -4,6 +4,7 @@ mod forwardconfig;
 mod forwardhandler;
 mod proxy;
 mod server;
+mod client;
 
 use clap::Parser;
 use env_logger::Env;
@@ -17,7 +18,7 @@ fn main() {
     let cli = cli::Cli::parse();
 
     match &cli.command {
-        cli::Command::Client(_args) => {}
+        cli::Command::Client(args) => cli::client::handler(args),
         cli::Command::Server(args) => cli::server::handler(args),
     }
 }
