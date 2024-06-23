@@ -18,8 +18,13 @@ impl ForwardHandler {
         }
     }
 
-    pub fn register_handler(&self, id: &String, tx: Sender) {
+    pub fn register_sender(&self, id: &String, sender: Sender) {
         let mut handlers = self.handlers.lock().unwrap();
-        handlers.insert(id.to_string(), tx);
+        handlers.insert(id.to_string(), sender);
+    }
+
+    pub fn get_sender(&self, id: &String) -> Sender {
+        let handlers = self.handlers.lock().unwrap();
+        handlers.get(id).unwrap().clone()
     }
 }

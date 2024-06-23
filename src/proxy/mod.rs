@@ -1,12 +1,13 @@
-use std::{
-    net::IpAddr,
-    sync::{Arc, Mutex},
-};
+use std::{collections::HashMap, net::IpAddr, sync::Arc};
 
 use async_trait::async_trait;
 use pingora::prelude::*;
 
-use crate::forwardconfig::{self, header::Header, store::ForwardConfigStore};
+use crate::{
+    dto,
+    forwardconfig::{header::Header, store::ForwardConfigStore},
+    forwardhandler::ForwardHandler,
+};
 
 pub struct Target {
     pub ip: IpAddr,
@@ -14,18 +15,10 @@ pub struct Target {
 }
 
 pub struct TeleproxyService {
-    forward_config_store: Arc<ForwardConfigStore>,
+    pub forward_config_store: Arc<ForwardConfigStore>,
+    pub forward_handler: Arc<ForwardHandler>,
 
-    target: Target,
-}
-
-impl TeleproxyService {
-    pub fn new(forward_config_store: Arc<ForwardConfigStore>, target: Target) -> Self {
-        Self {
-            forward_config_store,
-            target,
-        }
-    }
+    pub target: Target,
 }
 
 #[async_trait]
@@ -47,17 +40,32 @@ impl ProxyHttp for TeleproxyService {
     }
 
     async fn request_filter(&self, session: &mut Session, _ctx: &mut Self::CTX) -> Result<bool> {
-        todo!()
-        // let handler = session
-        //     .req_header()
-        //     .headers
-        //     .iter()
-        //     .map(|header| {
-        //         self.forward_config_store
-        //             .find_by_header(Header::from_pair(header))
-        //     })
-        //     .collect::<Vec<Option<Arc<Mutex<forwardconfig::config::Handler>>>>>()
-        //     .last();
-        // Ok(false)
+        let id = session.req_header().headers.iter().fold(None, |_, header| {
+            return self
+                .forward_config_store
+                .find_by_header(Header::from_pair(header));
+        });
+
+        match id {
+            Some(id) => {
+                let request = dto::Request {
+                    method: "GET".to_string(),
+                    url: "https://example.com".to_string(),
+                    header: HashMap::new(),
+                    body: Vec::new(),
+                };
+
+                let request_sender = self.forward_handler.get_sender(&id);
+
+                let (response_tx, response_rx) = tokio::sync::oneshot::channel();
+                request_sender.send((request, response_tx));
+
+                match response_rx.await {
+                    Ok(_response) => Ok(true),
+                    Err(_) => Ok(false),
+                }
+            }
+            None => Ok(false),
+        }
     }
 }

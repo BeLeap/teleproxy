@@ -49,13 +49,14 @@ pub fn handler(args: &ServerArgs) {
     let mut proxy_server = Server::new(None).unwrap();
     proxy_server.bootstrap();
 
-    let teleproxy_service = TeleproxyService::new(
-        forward_config_store_arc,
-        Target {
+    let teleproxy_service = TeleproxyService {
+        forward_config_store: forward_config_store_arc,
+        forward_handler: forward_handler_arc,
+        target: Target {
             ip: target_ip,
             port: args.target_port,
         },
-    );
+    };
 
     let mut teleproxy_service =
         pingora_proxy::http_proxy_service(&proxy_server.configuration, teleproxy_service);
