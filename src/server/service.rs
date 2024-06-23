@@ -97,7 +97,7 @@ impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
         request: tonic::Request<teleproxy_proto::FlushRequest>,
     ) -> tonic::Result<tonic::Response<teleproxy_proto::FlushResponse>> {
         let request = request.into_inner();
-        log::trace!("dump requested with payload {:?}", request);
+        log::trace!("flush requested with payload {:?}", request);
 
         unimplemented!()
     }
