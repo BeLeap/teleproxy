@@ -23,6 +23,8 @@ message HeaderValues { repeated string values = 1; }
 message ListenRequest {
   string api_key = 1;
 
+  string id = 2;
+
   string status = 3;
   int32 statusCode = 4;
   string proto = 5;
@@ -44,7 +46,7 @@ message DumpResponse { string dump = 1; }
 message FlushRequest { string api_key = 1; }
 message FlushResponse {}
 
-service Teleproxy {
+service TeleProxy {
   rpc Health(EchoRequest) returns (EchoResponse) {}
 
   rpc Register(RegisterRequest) returns (RegisterResponse) {}
