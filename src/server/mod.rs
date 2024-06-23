@@ -2,8 +2,8 @@ mod service;
 
 use self::service::TeleproxyImpl;
 use crate::forwardconfig::store::ForwardConfigStore;
-use std::sync::Arc;
 use log::info;
+use std::{borrow::Borrow, sync::Arc};
 use tonic::transport::Server;
 
 pub mod teleproxy_proto {
@@ -26,12 +26,25 @@ pub async fn run(
     info!("listening on {}", addr);
 
     Server::builder()
-        .add_service(teleproxy_proto::teleproxy_server::TeleproxyServer::new(
-            TeleproxyImpl::new(forward_config_store),
-        ))
+        .add_service(
+            teleproxy_proto::teleproxy_server::TeleproxyServer::with_interceptor(
+                TeleproxyImpl::new(forward_config_store),
+                interceptor,
+            ),
+        )
         .add_service(reflection_service)
         .serve(addr)
         .await?;
 
     Ok(())
+}
+
+fn interceptor(req: tonic::Request<()>) -> tonic::Result<tonic::Request<()>> {
+    logging_interceptor(req)
+}
+
+fn logging_interceptor(req: tonic::Request<()>) -> tonic::Result<tonic::Request<()>> {
+    log::trace!("request metadata {:?}", req);
+
+    Ok(req)
 }
