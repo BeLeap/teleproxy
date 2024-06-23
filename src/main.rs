@@ -1,6 +1,7 @@
 mod cli;
 mod dto;
 mod forwardconfig;
+mod forwardhandler;
 mod proxy;
 mod server;
 
