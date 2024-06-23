@@ -12,6 +12,7 @@ http = "1.1.0"
 log = "0.4.21"
 nanoid = "0.4.0"
 pingora = { version = "0.2", features = [ "lb" ] }
+pingora-core = "0.2.0"
 pingora-proxy = "0.2.0"
 prost = "0.12.6"
 serde = { version = "1.0.203", features = ["derive"] }

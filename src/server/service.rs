@@ -1,7 +1,7 @@
 use super::teleproxy_pb;
 use crate::{
-    dto,
-    forwardconfig::{header::Header, store::ForwardConfigStore},
+    dto::{self, header::Header},
+    forwardconfig::store::ForwardConfigStore,
     forwardhandler::ForwardHandler,
 };
 use std::{pin::Pin, sync::Arc};
@@ -36,7 +36,10 @@ impl teleproxy_pb::teleproxy_server::Teleproxy for TeleproxyImpl {
         let id = ulid::Ulid::new().to_string();
 
         self.forward_config_store
-            .insert(Header::new(request.header_key, request.header_value), &id);
+            .insert(Header {
+                key: request.header_key, 
+                value: request.header_value,
+            }, &id);
 
         Ok(tonic::Response::new(teleproxy_pb::RegisterResponse { id }))
     }
@@ -71,26 +74,20 @@ impl teleproxy_pb::teleproxy_server::Teleproxy for TeleproxyImpl {
             dto::Request,
             tokio::sync::oneshot::Sender<dto::Response>,
         )>(128);
-        self.forward_handler.register_handler(&id, tx);
+        self.forward_handler.register_sender(&id, tx);
 
         let (stream_tx, steram_rx) = tokio::sync::mpsc::channel(128);
         let out_stream = ReceiverStream::new(steram_rx);
 
         tokio::spawn(async move {
             while let Some((request, response_tx)) = rx.recv().await {
-                let header = request
-                    .header
+                let headers = request
+                    .headers
                     .iter()
                     .map(|header| {
                         (
-                            header.0.clone(),
-                            header.1.iter().fold(
-                                teleproxy_pb::HeaderValues { values: Vec::new() },
-                                |acc, value| {
-                                    let values = [acc.values, vec![value.to_string()]].concat();
-                                    teleproxy_pb::HeaderValues { values }
-                                },
-                            ),
+                            header.key.clone(),
+                            header.value.clone(),
                         )
                     })
                     .collect();
@@ -98,8 +95,8 @@ impl teleproxy_pb::teleproxy_server::Teleproxy for TeleproxyImpl {
                 let response_result = stream_tx
                     .send(Ok(teleproxy_pb::ListenResponse {
                         method: request.method,
-                        url: request.url,
-                        header,
+                        url: request.uri,
+                        headers,
                         body: request.body,
                     }))
                     .await;

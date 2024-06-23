@@ -2325,6 +2325,7 @@ dependencies = [
  "log",
  "nanoid",
  "pingora",
+ "pingora-core",
  "pingora-proxy",
  "prost",
  "serde",

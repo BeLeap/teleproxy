@@ -3,18 +3,14 @@ use serde::Serialize;
 
 #[derive(PartialEq, Eq, Hash, Clone, Serialize)]
 pub struct Header {
-    name: String,
-    value: String,
+    pub key: String,
+    pub value: String,
 }
 
 impl Header {
-    pub fn new(name: String, value: String) -> Self {
-        Self { name, value }
-    }
-
     pub fn from_pair((name, value): (&HeaderName, &HeaderValue)) -> Self {
         Self {
-            name: name.to_string(),
+            key: name.to_string(),
             value: value.to_str().unwrap().to_string(),
         }
     }

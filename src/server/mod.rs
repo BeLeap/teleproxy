@@ -23,7 +23,7 @@ pub async fn run(
         .unwrap();
 
     let addr = format!("[::]:{}", port).parse()?;
-    info!("listening on {}", addr);
+    info!("listening port: {}", port);
 
     let svc = teleproxy_pb::teleproxy_server::TeleproxyServer::with_interceptor(
         TeleproxyImpl {

@@ -1,4 +1,4 @@
-use super::header::Header;
+use crate::dto::header::Header;
 use std::hash::Hash;
 
 pub struct ForwardConfig {
