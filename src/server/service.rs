@@ -1,6 +1,7 @@
-use super::teleproxy_proto;
+use super::teleproxy_pb;
 use crate::forwardconfig::{header::Header, store::ForwardConfigStore};
 use std::{pin::Pin, sync::Arc};
+use tokio_stream::StreamExt;
 use tonic::Status;
 
 pub struct TeleproxyImpl {
@@ -16,22 +17,22 @@ impl TeleproxyImpl {
 }
 
 #[tonic::async_trait]
-impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
+impl teleproxy_pb::teleproxy_server::Teleproxy for TeleproxyImpl {
     async fn health(
         &self,
-        request: tonic::Request<teleproxy_proto::EchoRequest>,
-    ) -> tonic::Result<tonic::Response<teleproxy_proto::EchoResponse>> {
+        request: tonic::Request<teleproxy_pb::EchoRequest>,
+    ) -> tonic::Result<tonic::Response<teleproxy_pb::EchoResponse>> {
         let request = request.into_inner();
         log::trace!("health requested with payload {:?}", request);
 
-        let response = teleproxy_proto::EchoResponse {};
+        let response = teleproxy_pb::EchoResponse {};
         Ok(tonic::Response::new(response))
     }
 
     async fn register(
         &self,
-        request: tonic::Request<teleproxy_proto::RegisterRequest>,
-    ) -> tonic::Result<tonic::Response<teleproxy_proto::RegisterResponse>> {
+        request: tonic::Request<teleproxy_pb::RegisterRequest>,
+    ) -> tonic::Result<tonic::Response<teleproxy_pb::RegisterResponse>> {
         let request = request.into_inner();
         log::trace!("register requested with payload {:?}", request);
 
@@ -40,7 +41,7 @@ impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
         self.forward_config_store
             .insert(Header::new(request.header_key, request.header_value), &id);
 
-        Ok(tonic::Response::new(teleproxy_proto::RegisterResponse {
+        Ok(tonic::Response::new(teleproxy_pb::RegisterResponse {
             id,
         }))
     }
@@ -48,33 +49,38 @@ impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
     type ListenStream = Pin<
         Box<
             dyn tokio_stream::Stream<
-                    Item = tonic::Result<teleproxy_proto::ListenResponse, tonic::Status>,
+                    Item = tonic::Result<teleproxy_pb::ListenResponse, tonic::Status>,
                 > + Send,
         >,
     >;
     async fn listen(
         &self,
-        _request: tonic::Request<tonic::Streaming<teleproxy_proto::ListenRequest>>,
+        request: tonic::Request<tonic::Streaming<teleproxy_pb::ListenRequest>>,
     ) -> tonic::Result<tonic::Response<Self::ListenStream>> {
+        let mut in_stream = request.into_inner();
+
+        if let Some(Ok(request)) = in_stream.next().await {
+            let _id = request.id;
+        };
         todo!()
     }
 
     async fn deregister(
         &self,
-        request: tonic::Request<teleproxy_proto::DeregisterRequest>,
-    ) -> tonic::Result<tonic::Response<teleproxy_proto::DeregisterResponse>> {
+        request: tonic::Request<teleproxy_pb::DeregisterRequest>,
+    ) -> tonic::Result<tonic::Response<teleproxy_pb::DeregisterResponse>> {
         let request = request.into_inner();
         log::trace!("deregister requested with payload {:?}", request);
 
         self.forward_config_store.remove_by_id(&request.id);
 
-        Ok(tonic::Response::new(teleproxy_proto::DeregisterResponse {}))
+        Ok(tonic::Response::new(teleproxy_pb::DeregisterResponse {}))
     }
 
     async fn dump(
         &self,
-        request: tonic::Request<teleproxy_proto::DumpRequest>,
-    ) -> Result<tonic::Response<teleproxy_proto::DumpResponse>, tonic::Status> {
+        request: tonic::Request<teleproxy_pb::DumpRequest>,
+    ) -> Result<tonic::Response<teleproxy_pb::DumpResponse>, tonic::Status> {
         let request = request.into_inner();
         log::trace!("dump requested with payload {:?}", request);
 
@@ -82,7 +88,7 @@ impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
         let config_dump = serde_yml::to_string(&forward_config_store.list());
 
         match config_dump {
-            Ok(config_dump) => Ok(tonic::Response::new(teleproxy_proto::DumpResponse {
+            Ok(config_dump) => Ok(tonic::Response::new(teleproxy_pb::DumpResponse {
                 dump: config_dump,
             })),
             Err(err) => {
@@ -94,8 +100,8 @@ impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
 
     async fn flush(
         &self,
-        request: tonic::Request<teleproxy_proto::FlushRequest>,
-    ) -> tonic::Result<tonic::Response<teleproxy_proto::FlushResponse>> {
+        request: tonic::Request<teleproxy_pb::FlushRequest>,
+    ) -> tonic::Result<tonic::Response<teleproxy_pb::FlushResponse>> {
         let request = request.into_inner();
         log::trace!("flush requested with payload {:?}", request);
 
