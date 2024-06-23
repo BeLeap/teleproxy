@@ -19,9 +19,11 @@ impl TeleproxyImpl {
 impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
     async fn health(
         &self,
-        _request: tonic::Request<teleproxy_proto::EchoRequest>,
+        request: tonic::Request<teleproxy_proto::EchoRequest>,
     ) -> tonic::Result<tonic::Response<teleproxy_proto::EchoResponse>> {
-        log::trace!("gRPC Health Request Received");
+        let request = request.into_inner();
+        log::trace!("health requested with payload {:?}", request);
+
         let response = teleproxy_proto::EchoResponse {};
         Ok(tonic::Response::new(response))
     }
@@ -31,6 +33,8 @@ impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
         request: tonic::Request<teleproxy_proto::RegisterRequest>,
     ) -> tonic::Result<tonic::Response<teleproxy_proto::RegisterResponse>> {
         let request = request.into_inner();
+        log::trace!("register requested with payload {:?}", request);
+
         let id = ulid::Ulid::new().to_string();
 
         self.forward_config_store
@@ -60,6 +64,8 @@ impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
         request: tonic::Request<teleproxy_proto::DeregisterRequest>,
     ) -> tonic::Result<tonic::Response<teleproxy_proto::DeregisterResponse>> {
         let request = request.into_inner();
+        log::trace!("deregister requested with payload {:?}", request);
+
         self.forward_config_store.remove_by_id(&request.id);
 
         Ok(tonic::Response::new(teleproxy_proto::DeregisterResponse {}))
@@ -67,8 +73,11 @@ impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
 
     async fn dump(
         &self,
-        _request: tonic::Request<teleproxy_proto::DumpRequest>,
+        request: tonic::Request<teleproxy_proto::DumpRequest>,
     ) -> Result<tonic::Response<teleproxy_proto::DumpResponse>, tonic::Status> {
+        let request = request.into_inner();
+        log::trace!("dump requested with payload {:?}", request);
+
         let forward_config_store = Arc::clone(&self.forward_config_store);
         let config_dump = serde_yml::to_string(&forward_config_store.list());
 
@@ -85,8 +94,11 @@ impl teleproxy_proto::teleproxy_server::Teleproxy for TeleproxyImpl {
 
     async fn flush(
         &self,
-        _request: tonic::Request<teleproxy_proto::FlushRequest>,
+        request: tonic::Request<teleproxy_proto::FlushRequest>,
     ) -> tonic::Result<tonic::Response<teleproxy_proto::FlushResponse>> {
+        let request = request.into_inner();
+        log::trace!("dump requested with payload {:?}", request);
+
         unimplemented!()
     }
 }
