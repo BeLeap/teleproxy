@@ -15,6 +15,7 @@ pingora = { version = "0.2", features = [ "lb" ] }
 pingora-core = "0.2.0"
 pingora-proxy = "0.2.0"
 prost = "0.12.6"
+reqwest = "0.12.5"
 serde = { version = "1.0.203", features = ["derive"] }
 serde_yml = "0.0.10"
 tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread"] }
