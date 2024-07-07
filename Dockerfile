@@ -15,7 +15,7 @@ WORKDIR /app
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
-    apt-get install -y libssl-dev && \
+    apt-get install -y openssl libssl-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # Build the application.
