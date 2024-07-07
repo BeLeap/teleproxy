@@ -27,7 +27,7 @@ jobs:
           override: true
           profile: minimal
       - name: setup protoc
-        with: arduino/setup-protoc@v3
+        uses: arduino/setup-protoc@v3
       - name: build
         run: |
           FILENAME="teleproxy"
