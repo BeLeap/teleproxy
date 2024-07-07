@@ -3,6 +3,9 @@ name = "teleproxy"
 version = "0.2.0"
 edition = "2021"
 license = "MIT"
+description = '''
+Spy on HTTP Request using Header.
+'''
 homepage = "https://github.com/BeLeap/teleproxy"
 repository = "https://github.com/BeLeap/teleproxy"
 
