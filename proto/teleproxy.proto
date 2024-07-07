@@ -21,7 +21,7 @@ message DeregisterResponse {}
 
 enum ListenPhase {
   INIT = 0;
-  TUNNELLING = 1;
+  TUNNELING = 1;
   HEARTBEAT = 99;
 }
 
