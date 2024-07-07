@@ -2,6 +2,9 @@
 name = "teleproxy"
 version = "0.2.0"
 edition = "2021"
+license = "MIT"
+homepage = "https://github.com/BeLeap/teleproxy"
+repository = "https://github.com/BeLeap/teleproxy"
 
 [profile.release]
 strip = true
