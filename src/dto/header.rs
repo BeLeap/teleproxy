@@ -1,7 +1,6 @@
-use std::hash::Hash;
 use http::{HeaderName, HeaderValue};
-use pingora::http::ResponseHeader;
 use serde::Serialize;
+use std::hash::Hash;
 
 #[derive(Eq, Clone, Serialize, Debug)]
 pub struct Header {
@@ -22,21 +21,26 @@ impl PartialEq for Header {
     }
 }
 
-impl Header {
-    pub fn from_pair((name, value): (&HeaderName, &HeaderValue)) -> Self {
-        Self {
-            key: name.to_string(),
-            value: value.to_str().unwrap().to_string(),
-        }
-    }
+#[derive(Debug)]
+pub enum HeaderConversionError {
+    InvalidHeaderValue,
 }
 
-pub enum HeaderConversionError {}
-
-impl TryInto<pingora::http::ResponseHeader> for Header {
+impl TryFrom<(&HeaderName, &HeaderValue)> for Header {
     type Error = HeaderConversionError;
 
-    fn try_into(self) -> Result<pingora::http::ResponseHeader, Self::Error> {
-        todo!()
+    fn try_from((name, value): (&HeaderName, &HeaderValue)) -> Result<Self, Self::Error> {
+        let value = match value.to_str() {
+            Ok(v) => v,
+            Err(err) => {
+                log::error!("Failed to convert header value: {}", err);
+                return Err(HeaderConversionError::InvalidHeaderValue);
+            }
+        }
+        .to_string();
+        Ok(Self {
+            key: name.to_string(),
+            value,
+        })
     }
 }

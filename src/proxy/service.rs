@@ -23,8 +23,13 @@ impl ProxyHttp for TeleproxyPingoraService {
         _ctx: &mut Self::CTX,
     ) -> pingora_core::Result<bool> {
         let id = session.req_header().headers.iter().fold(None, |_, header| {
-            self.forward_config_store
-                .find_by_header(dto::header::Header::from_pair(header))
+            match dto::header::Header::try_from(header) {
+                Ok(v) => self.forward_config_store.find_by_header(v),
+                Err(err) => {
+                    log::error!("Failed to convert header: {:?}", err);
+                    None
+                }
+            }
         });
 
         match id {
@@ -44,7 +49,7 @@ impl ProxyHttp for TeleproxyPingoraService {
                     headers: req_header
                         .headers
                         .iter()
-                        .map(dto::header::Header::from_pair)
+                        .filter_map(|header| dto::header::Header::try_from(header).ok())
                         .collect(),
                     body,
                 };

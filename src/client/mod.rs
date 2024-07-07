@@ -10,8 +10,6 @@ pub type ClientResult<T> = Result<T, ClientError>;
 pub enum ClientError {
     Register,
     Deregister,
-    UriParse(String),
-    Connection,
 }
 
 pub async fn register(
