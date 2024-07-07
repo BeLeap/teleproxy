@@ -3,6 +3,12 @@ name = "teleproxy"
 version = "0.1.0"
 edition = "2021"
 
+[profile.release]
+strip = true
+opt-level = 3
+lto = true
+panic = "abort"
+
 [dependencies]
 async-trait="0.1"
 clap = { version = "4.5.6", features = ["derive"] }
