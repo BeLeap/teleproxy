@@ -1,3 +1,4 @@
+mod config;
 mod cli;
 mod client;
 mod dto;
