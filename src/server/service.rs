@@ -81,7 +81,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
             }
         };
         let (tx, mut rx) = tokio::sync::mpsc::channel::<(
-            dto::Request,
+            dto::listen_response::ListenResponse,
             tokio::sync::oneshot::Sender<dto::listen_request::ListenRequest>,
         )>(128);
         self.forward_handler.register_sender(&id, tx);

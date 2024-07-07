@@ -38,7 +38,7 @@ impl ProxyHttp for TeleproxyPingoraService {
                     Err(_e) => vec![],
                 };
                 let req_header = session.req_header();
-                let request = dto::Request {
+                let request = dto::listen_response::ListenResponse {
                     method: req_header.method.to_string(),
                     uri: req_header.uri.to_string(),
                     headers: req_header
