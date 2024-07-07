@@ -82,7 +82,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
         };
         let (tx, mut rx) = tokio::sync::mpsc::channel::<(
             dto::http_request::HttpRequest,
-            tokio::sync::oneshot::Sender<dto::listen_request::ListenRequest>,
+            tokio::sync::oneshot::Sender<dto::http_response::HttpResponse>,
         )>(128);
         self.forward_handler.register_sender(&id, tx);
 
@@ -99,10 +99,10 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
                     Err(_) => todo!(),
                 }
 
-                let mut response: Option<dto::listen_request::ListenRequest> = None;
+                let mut response: Option<dto::http_response::HttpResponse> = None;
                 while let Some(result) = in_stream.next().await {
                     if let Ok(request) = result {
-                        match dto::listen_request::ListenRequest::try_from(request) {
+                        match dto::http_response::HttpResponse::try_from(request) {
                             Ok(request) => {
                                 response = Some(request);
                                 break;

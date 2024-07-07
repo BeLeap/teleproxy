@@ -1,8 +1,8 @@
-use crate::{proto, dto};
+use crate::{dto, proto};
 use http::StatusCode;
 
 #[derive(Debug)]
-pub struct ListenRequest {
+pub struct HttpResponse {
     pub status_code: StatusCode,
     pub headers: Vec<dto::header::Header>,
     pub body: Vec<u8>,
@@ -13,7 +13,7 @@ pub enum ResponseConversionError {
     WrongStatusCode,
 }
 
-impl TryFrom<proto::teleproxy::ListenRequest> for ListenRequest {
+impl TryFrom<proto::teleproxy::ListenRequest> for HttpResponse {
     type Error = ResponseConversionError;
 
     fn try_from(value: proto::teleproxy::ListenRequest) -> Result<Self, Self::Error> {
@@ -50,5 +50,49 @@ impl TryFrom<proto::teleproxy::ListenRequest> for ListenRequest {
             headers,
             body,
         })
+    }
+}
+
+impl HttpResponse {
+    pub async fn from_reqwest(value: reqwest::Response) -> HttpResponse {
+        let status_code = value.status();
+
+        let headers: Vec<dto::header::Header> = value
+            .headers()
+            .iter()
+            .filter_map(|header| header.try_into().ok())
+            .collect();
+
+        let body = value.bytes().await;
+        let body = match body {
+            Ok(v) => v,
+            Err(err) => {
+                panic!("Failed to get body: {}", err)
+            }
+        };
+        let body = body.to_vec();
+
+        HttpResponse {
+            status_code,
+            headers,
+            body,
+        }
+    }
+
+    pub fn into_proto(self, api_key: String, id: String) -> proto::teleproxy::ListenRequest {
+        let headers = self
+            .headers
+            .iter()
+            .map(|header| header.clone().into())
+            .collect();
+
+        proto::teleproxy::ListenRequest {
+            api_key,
+            id,
+            phase: dto::phase::ListenPhase::Tunneling as i32,
+            status_code: self.status_code.as_u16() as i32,
+            headers,
+            body: self.body,
+        }
     }
 }

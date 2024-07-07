@@ -50,3 +50,19 @@ impl From<Header> for (String, String) {
         (val.key, val.value)
     }
 }
+
+impl From<(&String, &String)> for Header {
+    fn from(value: (&String, &String)) -> Self {
+        Header {
+            key: value.0.clone(),
+            value: value.1.clone(),
+        }
+    }
+}
+
+impl From<&Header> for (reqwest::header::HeaderName, reqwest::header::HeaderValue) {
+    fn from(value: &Header) -> Self {
+        let key = reqwest::header::HeaderName::from_bytes(value.key.as_bytes()).unwrap();
+        (key, value.value.parse().unwrap())
+    }
+}
