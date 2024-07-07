@@ -41,12 +41,18 @@ impl From<proto::teleproxy::ListenResponse> for HttpRequest {
     }
 }
 
+#[derive(Debug)]
+pub enum RequestConversionError {
+    InvalidMethod,
+}
+
 impl HttpRequest {
-    pub fn into_reqwest(self, http_client: HttpClient) -> reqwest::RequestBuilder {
+    pub fn try_into_reqwest(self, http_client: HttpClient) -> Result<reqwest::RequestBuilder, RequestConversionError> {
         let method: http::Method = match self.method.parse() {
             Ok(v) => v,
             Err(err) => {
-                panic!("Received unsupported method: {}", err)
+                log::error!("Received unsupported method: {}", err);
+                return Err(RequestConversionError::InvalidMethod);
             }
         };
         let client = http_client.into_reqwest(method, self.uri);
@@ -58,6 +64,6 @@ impl HttpRequest {
             .collect();
         let client = client.headers(headers);
 
-        client.body(self.body)
+        Ok(client.body(self.body))
     }
 }

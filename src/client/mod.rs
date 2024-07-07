@@ -91,50 +91,65 @@ pub async fn listen(
                     let http_client = HttpClient {
                         target: target.to_string(),
                     };
-                    let client = http_request.into_reqwest(http_client);
-                    let http_response = client.send().await;
-
-                    match http_response {
-                        Ok(http_response) => {
-                            match HttpResponse::from_reqwest(http_response).await {
-                                Ok(http_response) => {
-                                    let listen_request =
-                                        http_response.into_proto("".to_string(), id.clone());
-
-                                    stream_tx.send(listen_request)
-                                }
-                                Err(err) => {
-                                    log::error!("Failed to convert response into dto: {:?}", err);
-                                    stream_tx.send(
-                                        dto::http_response::INTERNAL_ERROR_RESPONSE
-                                            .into_proto(api_key.to_string(), id.to_string()),
-                                    )
-                                }
-                            }
-                        }
-                        Err(err) => {
-                            log::error!("Failed to send request: {:?}", err);
+                    match http_request.try_into_reqwest(http_client) {
+                        Err(e) => {
+                            log::error!("Failed to convert request into reqwest: {:?}", e);
                             stream_tx.send(
                                 dto::http_response::INTERNAL_ERROR_RESPONSE
                                     .into_proto(api_key.to_string(), id.to_string()),
                             )
                         }
+                        Ok(client) => {
+                            let http_response = client.send().await;
+
+                            match http_response {
+                                Err(err) => {
+                                    log::error!("Failed to send request: {:?}", err);
+                                    stream_tx.send(
+                                        dto::http_response::INTERNAL_ERROR_RESPONSE
+                                            .into_proto(api_key.to_string(), id.to_string()),
+                                    )
+                                }
+                                Ok(http_response) => {
+                                    match HttpResponse::from_reqwest(http_response).await {
+                                        Err(err) => {
+                                            log::error!(
+                                                "Failed to convert response into dto: {:?}",
+                                                err
+                                            );
+                                            stream_tx.send(
+                                                dto::http_response::INTERNAL_ERROR_RESPONSE
+                                                    .into_proto(
+                                                        api_key.to_string(),
+                                                        id.to_string(),
+                                                    ),
+                                            )
+                                        }
+                                        Ok(http_response) => {
+                                            let listen_request = http_response
+                                                .into_proto("".to_string(), id.clone());
+
+                                            stream_tx.send(listen_request)
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
-                },
+                }
                 phase => {
                     log::error!("Unsupported phase: {:?}", phase);
-                    stream_tx
-                        .send(
-                            dto::http_response::INTERNAL_ERROR_RESPONSE
-                                .into_proto(api_key.to_string(), id.to_string()),
-                        )
+                    stream_tx.send(
+                        dto::http_response::INTERNAL_ERROR_RESPONSE
+                            .into_proto(api_key.to_string(), id.to_string()),
+                    )
                 }
             };
             match request_send_result.await {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(err) => {
                     log::error!("Failed to pass listen_request: {}", err);
-                },
+                }
             }
         }
     }
