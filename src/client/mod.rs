@@ -87,8 +87,8 @@ pub async fn listen(
 
                     let method: http::Method = match listen_response.method.parse() {
                         Ok(v) => v,
-                        Err(_err) => {
-                            todo!()
+                        Err(err) => {
+                            panic!("Received unsupported method: {}", err)
                         }
                     };
                     let url = target.parse::<reqwest::Url>().unwrap();
@@ -107,7 +107,9 @@ pub async fn listen(
 
                     let mut http_response = match http_response {
                         Ok(v) => v,
-                        Err(_) => todo!(),
+                        Err(err) => {
+                            panic!("Failed to send request: {}", err)
+                        },
                     };
 
                     let status_code = http_response.status().as_u16() as i32;
@@ -123,7 +125,9 @@ pub async fn listen(
                     let body = http_response.bytes().await;
                     let body = match body {
                         Ok(v) => v,
-                        Err(_) => todo!(),
+                        Err(err) => {
+                            panic!("Failed to get body: {}", err)
+                        },
                     };
                     let body = body.to_vec();
 
