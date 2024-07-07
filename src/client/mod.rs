@@ -63,17 +63,19 @@ pub async fn listen(
 ) -> ClientResult<()> {
     let (stream_tx, stream_rx) = tokio::sync::mpsc::channel(128);
     let in_stream = ReceiverStream::new(stream_rx);
+    let _ = stream_tx
+        .send(proto::teleproxy::ListenRequest {
+            api_key: api_key.to_string(),
+            id: id.to_string(),
+            phase: 0,
+            status_code: 0,
+            headers: HashMap::new(),
+            body: Vec::new(),
+        })
+        .await;
+
     let response = client.listen(in_stream).await.unwrap();
     let mut out_stream = response.into_inner();
-
-    let _ = stream_tx.send(proto::teleproxy::ListenRequest {
-        api_key: api_key.to_string(),
-        id: id.to_string(),
-        phase: 0,
-        status_code: 0,
-        headers: HashMap::new(),
-        body: Vec::new(),
-    }).await;
 
     while let Some(result) = out_stream.next().await {
         let listen_response = result.unwrap();

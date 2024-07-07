@@ -42,8 +42,9 @@ pub fn handler(args: &ClientArgs) {
             )
             .await
             .unwrap();
-            log::info!("clien registered with id: {}", id);
+            log::info!("client registered with id: {}", id);
 
+            log::info!("starting listen with id: {}", id);
             let _ = client::listen(
                 &mut teleproxy_client,
                 &args.api_key,

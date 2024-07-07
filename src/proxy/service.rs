@@ -27,12 +27,16 @@ impl ProxyHttp for TeleproxyPingoraService {
                 .find_by_header(dto::header::Header::from_pair(header))
         });
 
-        log::info!("{:?}", id);
-
         match id {
             Some(id) => {
                 log::info!("forwarding requsest to id: {}", id);
-                let body = session.read_request_body().await.unwrap().unwrap();
+                let body = match session.read_request_body().await {
+                    Ok(v) => match v {
+                        Some(v) => v.to_vec(),
+                        None => vec![],
+                    },
+                    Err(_e) => vec![],
+                };
                 let req_header = session.req_header();
                 let request = dto::Request {
                     method: req_header.method.to_string(),
@@ -42,7 +46,7 @@ impl ProxyHttp for TeleproxyPingoraService {
                         .iter()
                         .map(dto::header::Header::from_pair)
                         .collect(),
-                    body: body.to_vec(),
+                    body,
                 };
 
                 let request_sender = self.forward_handler.get_sender(&id);
