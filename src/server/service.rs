@@ -121,7 +121,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
 
                 let response_forward_result = response_tx.send(response.unwrap());
                 match response_forward_result {
-                    Ok(_) => todo!(),
+                    Ok(_) => {},
                     Err(_) => todo!(),
                 }
             }
