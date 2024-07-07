@@ -15,7 +15,7 @@ WORKDIR /app
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
-    apt-get install -y build-essential cmake perl openssl libssl-dev && \
+    apt-get install -y build-essential cmake perl openssl libssl-dev protobuf-compiler && \
     rm -rf /var/lib/apt/lists/*
 
 # Build the application.
