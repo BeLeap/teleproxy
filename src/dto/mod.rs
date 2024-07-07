@@ -6,12 +6,14 @@ use crate::proto;
 
 use self::header::Header;
 
+#[derive(Debug)]
 pub struct Request {
     pub method: String,
     pub uri: String,
     pub headers: Vec<header::Header>,
     pub body: Vec<u8>,
 }
+#[derive(Debug)]
 pub struct Response {
     pub status_code: StatusCode,
     pub headers: Vec<header::Header>,
@@ -34,6 +36,7 @@ impl Response {
                 panic!()
             }
         };
+        log::debug!("built status code: {:?}", status_code);
 
         let headers = pb
             .headers
@@ -43,6 +46,7 @@ impl Response {
                 value: header.1.to_string(),
             })
             .collect();
+        log::debug!("built headers: {:?}", headers);
 
         let body = pb.body;
 

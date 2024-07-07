@@ -2,7 +2,7 @@ use std::hash::Hash;
 use http::{HeaderName, HeaderValue};
 use serde::Serialize;
 
-#[derive(Eq, Clone, Serialize)]
+#[derive(Eq, Clone, Serialize, Debug)]
 pub struct Header {
     pub key: String,
     pub value: String,

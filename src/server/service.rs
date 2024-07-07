@@ -114,7 +114,8 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
                 let mut response: Option<dto::Response> = None;
                 while let Some(result) = in_stream.next().await {
                     if let Ok(request) = result {
-                        response = Some(dto::Response::from_pb(request))
+                        response = Some(dto::Response::from_pb(request));
+                        break;
                     }
                 }
 
