@@ -59,7 +59,7 @@ pub async fn listen(
     client: &mut Client,
     api_key: &String,
     id: &String,
-    target: &String,
+    target: &str,
 ) -> ClientResult<()> {
     let (stream_tx, stream_rx) = tokio::sync::mpsc::channel(128);
     let in_stream = ReceiverStream::new(stream_rx);

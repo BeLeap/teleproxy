@@ -44,7 +44,13 @@ pub fn handler(args: &ClientArgs) {
             .unwrap();
             log::info!("clien registered with id: {}", id);
 
-            let _ = client::listen(&mut teleproxy_client, &args.api_key, &id, &args.target_address).await;
+            let _ = client::listen(
+                &mut teleproxy_client,
+                &args.api_key,
+                &id,
+                &args.target_address,
+            )
+            .await;
 
             log::info!("clien deregister request with id: {}", id);
             let _ = client::deregister(&mut teleproxy_client, args.api_key.to_string(), id).await;
