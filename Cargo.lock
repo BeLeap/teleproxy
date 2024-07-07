@@ -2546,7 +2546,7 @@ dependencies = [
 
 [[package]]
 name = "teleproxy"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "async-trait",
  "clap 4.5.6",
