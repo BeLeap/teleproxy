@@ -6,7 +6,7 @@ use std::{
 use crate::dto;
 
 type Sender =
-    tokio::sync::mpsc::Sender<(dto::Request, tokio::sync::oneshot::Sender<dto::Response>)>;
+    tokio::sync::mpsc::Sender<(dto::Request, tokio::sync::oneshot::Sender<dto::listen_request::ListenRequest>)>;
 pub struct ForwardHandler {
     handlers: Arc<Mutex<HashMap<String, Sender>>>,
 }

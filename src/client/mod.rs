@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use tokio_stream::{wrappers::ReceiverStream, StreamExt};
 
-use crate::{dto::{self, phase::ListenPhase}, proto};
+use crate::{dto::{self}, proto};
 
 type Client = proto::teleproxy::teleproxy_client::TeleproxyClient<tonic::transport::Channel>;
 
@@ -82,7 +82,7 @@ pub async fn listen(
             let listen_response = result.unwrap();
 
             match listen_response.phase.try_into().unwrap() {
-                ListenPhase::Tunneling => {
+                dto::phase::ListenPhase::Tunneling => {
                     let client = reqwest::Client::new();
 
                     let method: http::Method = match listen_response.method.parse() {
@@ -136,7 +136,7 @@ pub async fn listen(
                     let listen_request = proto::teleproxy::ListenRequest {
                         api_key: "".to_string(),
                         id: id.to_string(),
-                        phase: ListenPhase::Tunneling as i32,
+                        phase: dto::phase::ListenPhase::Tunneling as i32,
                         status_code,
                         headers,
                         body,
