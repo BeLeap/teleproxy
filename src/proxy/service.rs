@@ -27,6 +27,8 @@ impl ProxyHttp for TeleproxyPingoraService {
                 .find_by_header(dto::header::Header::from_pair(header))
         });
 
+        log::info!("{:?}", id);
+
         match id {
             Some(id) => {
                 log::info!("forwarding requsest to id: {}", id);

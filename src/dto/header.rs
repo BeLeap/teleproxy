@@ -1,10 +1,24 @@
+use std::hash::Hash;
 use http::{HeaderName, HeaderValue};
 use serde::Serialize;
 
-#[derive(PartialEq, Eq, Hash, Clone, Serialize)]
+#[derive(Eq, Clone, Serialize)]
 pub struct Header {
     pub key: String,
     pub value: String,
+}
+
+impl Hash for Header {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.key.to_lowercase().hash(state);
+        self.value.hash(state);
+    }
+}
+
+impl PartialEq for Header {
+    fn eq(&self, other: &Self) -> bool {
+        self.key.to_lowercase() == other.key.to_lowercase() && self.value == other.value
+    }
 }
 
 impl Header {
