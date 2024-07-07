@@ -1,0 +1,60 @@
+syntax = "proto3";
+package teleproxy;
+
+message EchoRequest {}
+message EchoResponse {}
+
+message RegisterRequest {
+  string api_key = 1;
+
+  string header_key = 2;
+  string header_value = 3;
+}
+message RegisterResponse { string id = 1; }
+
+message DeregisterRequest {
+  string api_key = 1;
+
+  string id = 2;
+}
+message DeregisterResponse {}
+
+enum ListenPhase {
+  INIT = 0;
+  TUNNELING = 1;
+  HEARTBEAT = 99;
+}
+
+message ListenRequest {
+  string api_key = 1;
+
+  string id = 2;
+  ListenPhase phase = 3;
+
+  int32 statusCode = 4;
+  map<string, string> headers = 8;
+  bytes body = 9;
+}
+message ListenResponse {
+  ListenPhase phase = 1;
+  string method = 2;
+  string url = 3;
+  map<string, string> headers = 4;
+  bytes body = 5;
+}
+
+message DumpRequest { string api_key = 1; }
+message DumpResponse { string dump = 1; }
+
+message FlushRequest { string api_key = 1; }
+message FlushResponse {}
+
+service Teleproxy {
+  rpc Health(EchoRequest) returns (EchoResponse) {}
+
+  rpc Register(RegisterRequest) returns (RegisterResponse) {}
+  rpc Listen(stream ListenRequest) returns (stream ListenResponse) {}
+  rpc Deregister(DeregisterRequest) returns (DeregisterResponse) {}
+  rpc Dump(DumpRequest) returns (DumpResponse) {}
+  rpc Flush(FlushRequest) returns (FlushResponse) {}
+}

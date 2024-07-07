@@ -1,3 +1,0 @@
-port: 4001
-proxyPort: 4000
-target: http://localhost:8080
