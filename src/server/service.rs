@@ -67,17 +67,17 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
                     if request.phase == ListenPhase::Init as i32 {
                         request.id
                     } else {
-                        panic!("First request for listen must be INIT")
+                        return Err(tonic::Status::invalid_argument("First request for listen must be INIT"));
                     }
                 }
                 Err(e) => {
                     log::error!("{:?}", e);
-                    panic!("{:?}", e);
+                    return Err(tonic::Status::internal(format!("{:?}", e)));
                 }
             },
             None => {
                 log::error!("Failed to get first request");
-                panic!("Failed to get first request");
+                return Err(tonic::Status::internal("Failed to get first request"));
             }
         };
         let (tx, mut rx) = tokio::sync::mpsc::channel::<(
