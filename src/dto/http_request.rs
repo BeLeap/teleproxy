@@ -8,9 +8,9 @@ pub struct HttpRequest {
     pub body: Vec<u8>,
 }
 
-impl Into<proto::teleproxy::ListenResponse> for HttpRequest {
-    fn into(self) -> proto::teleproxy::ListenResponse {
-        let headers = self
+impl From<HttpRequest> for proto::teleproxy::ListenResponse {
+    fn from(val: HttpRequest) -> Self {
+        let headers = val
             .headers
             .iter()
             .map(|header| header.clone().into())
@@ -18,10 +18,10 @@ impl Into<proto::teleproxy::ListenResponse> for HttpRequest {
 
         proto::teleproxy::ListenResponse {
             phase: dto::phase::ListenPhase::Tunneling as i32,
-            method: self.method,
-            url: self.uri,
+            method: val.method,
+            url: val.uri,
             headers,
-            body: self.body,
+            body: val.body,
         }
     }
 }
