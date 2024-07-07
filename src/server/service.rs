@@ -91,8 +91,8 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
 
         tokio::spawn(async move {
             while let Some((request, response_tx)) = rx.recv().await {
-                let response_result = stream_tx.send(Ok(request.into())).await;
-                let send_result = match response_result {
+                let pass_request_result = stream_tx.send(Ok(request.into())).await;
+                let pass_response_result = match pass_request_result {
                     Ok(_) => {
                         let response = loop {
                             if let Some(Ok(request)) = in_stream.next().await {
@@ -115,7 +115,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
                     }
                 };
 
-                match send_result {
+                match pass_response_result {
                     Ok(_) => {}
                     Err(err) => {
                         log::error!("Failed to pass response: {:?}", err);
