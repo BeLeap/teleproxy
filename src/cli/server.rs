@@ -1,4 +1,4 @@
-use std::{env, net::IpAddr, sync::Arc};
+use std::{env, sync::Arc};
 
 use clap::Args;
 

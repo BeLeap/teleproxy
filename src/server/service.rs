@@ -9,6 +9,7 @@ use tokio_stream::{wrappers::ReceiverStream, StreamExt};
 use tonic::Status;
 
 pub struct TeleproxyImpl {
+    pub api_key: String,
     pub forward_config_store: Arc<ForwardConfigStore>,
     pub forward_handler: Arc<ForwardHandler>,
 }
@@ -32,6 +33,10 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
     ) -> tonic::Result<tonic::Response<proto::teleproxy::RegisterResponse>> {
         let request = request.into_inner();
         log::trace!("register requested with payload {:?}", request);
+
+        if request.api_key != self.api_key {
+            return Err(tonic::Status::unauthenticated("Invalid api key"));
+        }
 
         let id = ulid::Ulid::new().to_string();
 
@@ -64,10 +69,16 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
         let id = match in_stream.next().await {
             Some(result) => match result {
                 Ok(request) => {
+                    if request.api_key != self.api_key {
+                        return Err(tonic::Status::unauthenticated("Invalid api key"));
+                    }
+
                     if request.phase == ListenPhase::Init as i32 {
                         request.id
                     } else {
-                        return Err(tonic::Status::invalid_argument("First request for listen must be INIT"));
+                        return Err(tonic::Status::invalid_argument(
+                            "First request for listen must be INIT",
+                        ));
                     }
                 }
                 Err(e) => {
@@ -136,6 +147,10 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
         let request = request.into_inner();
         log::trace!("deregister requested with payload {:?}", request);
 
+        if request.api_key != self.api_key {
+            return Err(tonic::Status::unauthenticated("Invalid api key"));
+        }
+
         self.forward_config_store.remove_by_id(&request.id);
 
         Ok(tonic::Response::new(
@@ -149,6 +164,10 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
     ) -> Result<tonic::Response<proto::teleproxy::DumpResponse>, tonic::Status> {
         let request = request.into_inner();
         log::trace!("dump requested with payload {:?}", request);
+
+        if request.api_key != self.api_key {
+            return Err(tonic::Status::unauthenticated("Invalid api key"));
+        }
 
         let forward_config_store = Arc::clone(&self.forward_config_store);
         let config_dump = serde_yml::to_string(&forward_config_store.list());
@@ -170,6 +189,10 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
     ) -> tonic::Result<tonic::Response<proto::teleproxy::FlushResponse>> {
         let request = request.into_inner();
         log::trace!("flush requested with payload {:?}", request);
+
+        if request.api_key != self.api_key {
+            return Err(tonic::Status::unauthenticated("Invalid api key"));
+        }
 
         unimplemented!()
     }

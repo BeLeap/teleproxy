@@ -16,11 +16,12 @@ pub async fn run(
         .build()
         .unwrap();
 
-    let addr = format!("[::]:{}", server_config.port).parse()?;
-    info!("listening port: {}", server_config.port);
+    let addr = format!("[::]:{}", server_config.server_port).parse()?;
+    info!("listening port: {}", server_config.server_port);
 
     let svc = proto::teleproxy::teleproxy_server::TeleproxyServer::with_interceptor(
         TeleproxyImpl {
+            api_key: server_config.api_key,
             forward_config_store,
             forward_handler,
         },
