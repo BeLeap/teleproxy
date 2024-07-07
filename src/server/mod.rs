@@ -38,10 +38,6 @@ pub async fn run(
 }
 
 fn interceptor(req: tonic::Request<()>) -> tonic::Result<tonic::Request<()>> {
-    logging_interceptor(req)
-}
-
-fn logging_interceptor(req: tonic::Request<()>) -> tonic::Result<tonic::Request<()>> {
     log::trace!("request metadata {:?}", req);
 
     Ok(req)
