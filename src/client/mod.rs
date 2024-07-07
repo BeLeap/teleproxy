@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use tokio_stream::{wrappers::ReceiverStream, StreamExt};
 
-use crate::{dto::phase::ListenPhase, proto};
+use crate::{dto::{self, phase::ListenPhase}, proto};
 
 type Client = proto::teleproxy::teleproxy_client::TeleproxyClient<tonic::transport::Channel>;
 
@@ -91,7 +91,9 @@ pub async fn listen(
                             panic!("Received unsupported method: {}", err)
                         }
                     };
-                    let url = target.parse::<reqwest::Url>().unwrap();
+                    let url = format!("{}{}", target, listen_response.url);
+                    log::debug!("Sending request to {:?}", url);
+                    let url = url.parse::<reqwest::Url>().unwrap();
                     let client = client.request(method, url);
 
                     let mut headers = reqwest::header::HeaderMap::new();
@@ -139,6 +141,7 @@ pub async fn listen(
                         headers,
                         body,
                     };
+                    println!("Sending {:?}", listen_request);
 
                     let _ = stream_tx.send(listen_request).await;
                 }

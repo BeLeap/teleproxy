@@ -56,14 +56,6 @@ impl ProxyHttp for TeleproxyPingoraService {
 
                 match response_rx.await {
                     Ok(response) => {
-                        if let Err(err) = session
-                            .write_response_body(Bytes::from(response.body))
-                            .await
-                        {
-                            log::error!("write_response_body error: {:?}", err);
-                            return Err(pingora_core::Error::new(ErrorType::InternalError));
-                        };
-
                         let response_header =
                             ResponseHeader::build(response.status_code.as_u16(), None).unwrap();
                         if let Err(err) = session
@@ -73,6 +65,17 @@ impl ProxyHttp for TeleproxyPingoraService {
                             log::error!("write_response_header error: {:?}", err);
                             return Err(pingora_core::Error::new(ErrorType::InternalError));
                         };
+
+                        if let Err(err) = session
+                            .write_response_body(Bytes::from(response.body))
+                            .await
+                        {
+                            log::error!("write_response_body error: {:?}", err);
+                            return Err(pingora_core::Error::new(ErrorType::InternalError));
+                        };
+
+                        session.set_keepalive(None);
+
                         Ok(true)
                     }
                     Err(err) => {
