@@ -85,7 +85,7 @@ pub async fn listen(
         if let Some(result) = out_stream.next().await {
             let listen_response = result.unwrap();
 
-            match listen_response.phase.try_into().unwrap() {
+            let request_send_result = match listen_response.phase.try_into().unwrap() {
                 dto::phase::ListenPhase::Tunneling => {
                     let http_request: dto::http_request::HttpRequest = listen_response.into();
                     let http_client = HttpClient {
@@ -96,32 +96,45 @@ pub async fn listen(
 
                     match http_response {
                         Ok(http_response) => {
-                            let http_response = HttpResponse::from_reqwest(http_response).await;
-                            let listen_request =
-                                http_response.into_proto("".to_string(), id.clone());
+                            match HttpResponse::from_reqwest(http_response).await {
+                                Ok(http_response) => {
+                                    let listen_request =
+                                        http_response.into_proto("".to_string(), id.clone());
 
-                            let _ = stream_tx.send(listen_request).await;
+                                    stream_tx.send(listen_request)
+                                }
+                                Err(err) => {
+                                    log::error!("Failed to convert response into dto: {:?}", err);
+                                    stream_tx.send(
+                                        dto::http_response::INTERNAL_ERROR_RESPONSE
+                                            .into_proto(api_key.to_string(), id.to_string()),
+                                    )
+                                }
+                            }
                         }
                         Err(err) => {
-                            log::error!("Failed to send request: {}", err);
-                            let _ = stream_tx
-                                .send(
-                                    dto::http_response::INTERNAL_ERROR_RESPONSE
-                                        .into_proto(api_key.to_string(), id.to_string()),
-                                )
-                                .await;
+                            log::error!("Failed to send request: {:?}", err);
+                            stream_tx.send(
+                                dto::http_response::INTERNAL_ERROR_RESPONSE
+                                    .into_proto(api_key.to_string(), id.to_string()),
+                            )
                         }
-                    };
-                }
+                    }
+                },
                 phase => {
                     log::error!("Unsupported phase: {:?}", phase);
-                    let _ = stream_tx
+                    stream_tx
                         .send(
                             dto::http_response::INTERNAL_ERROR_RESPONSE
                                 .into_proto(api_key.to_string(), id.to_string()),
                         )
-                        .await;
                 }
+            };
+            match request_send_result.await {
+                Ok(_) => {},
+                Err(err) => {
+                    log::error!("Failed to pass listen_request: {}", err);
+                },
             }
         }
     }

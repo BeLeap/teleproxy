@@ -17,6 +17,7 @@ pub struct HttpResponse {
 #[derive(Debug)]
 pub enum ResponseConversionError {
     WrongStatusCode,
+    WrongBody,
 }
 
 impl TryFrom<proto::teleproxy::ListenRequest> for HttpResponse {
@@ -60,7 +61,9 @@ impl TryFrom<proto::teleproxy::ListenRequest> for HttpResponse {
 }
 
 impl HttpResponse {
-    pub async fn from_reqwest(value: reqwest::Response) -> HttpResponse {
+    pub async fn from_reqwest(
+        value: reqwest::Response,
+    ) -> Result<HttpResponse, ResponseConversionError> {
         let status_code = value.status();
 
         let headers: Vec<dto::header::Header> = value
@@ -70,18 +73,20 @@ impl HttpResponse {
             .collect();
 
         let body = value.bytes().await;
-        let body = match body {
-            Ok(v) => v,
-            Err(err) => {
-                panic!("Failed to get body: {}", err)
-            }
-        };
-        let body = body.to_vec();
+        match body {
+            Ok(body) => {
+                let body = body.to_vec();
 
-        HttpResponse {
-            status_code,
-            headers,
-            body,
+                Ok(HttpResponse {
+                    status_code,
+                    headers,
+                    body,
+                })
+            }
+            Err(err) => {
+                log::error!("Failed to get body: {}", err);
+                Err(ResponseConversionError::WrongBody)
+            }
         }
     }
 
