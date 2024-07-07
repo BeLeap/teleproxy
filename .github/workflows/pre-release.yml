@@ -30,12 +30,8 @@ jobs:
         uses: arduino/setup-protoc@v3
       - name: build
         run: |
-          FILENAME="teleproxy"
-          if [ "${{ matrix.os }}" = "windows" ]; then
-            FILENAME="teleproxy.exe"
-          fi
           cargo build --locked --release
-          tar czf teleproxy-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz ./target/release/$FILENAME
+          tar czf teleproxy-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz ./target/release/teleproxy
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
