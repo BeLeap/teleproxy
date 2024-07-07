@@ -81,7 +81,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
             }
         };
         let (tx, mut rx) = tokio::sync::mpsc::channel::<(
-            dto::listen_response::ListenResponse,
+            dto::listen_response::HttpRequest,
             tokio::sync::oneshot::Sender<dto::listen_request::ListenRequest>,
         )>(128);
         self.forward_handler.register_sender(&id, tx);
@@ -91,20 +91,8 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
 
         tokio::spawn(async move {
             while let Some((request, response_tx)) = rx.recv().await {
-                let headers = request
-                    .headers
-                    .iter()
-                    .map(|header| (header.key.clone(), header.value.clone()))
-                    .collect();
-
                 let response_result = stream_tx
-                    .send(Ok(proto::teleproxy::ListenResponse {
-                        phase: ListenPhase::Tunneling as i32,
-                        method: request.method,
-                        url: request.uri,
-                        headers,
-                        body: request.body,
-                    }))
+                    .send(Ok(request.into()))
                     .await;
                 match response_result {
                     Ok(_) => {}

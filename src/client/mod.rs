@@ -94,7 +94,7 @@ pub async fn listen(
                     let url = url.parse::<reqwest::Url>().unwrap();
                     let client = client.request(method, url);
 
-                    let mut headers = reqwest::header::HeaderMap::new();
+                   let mut headers = reqwest::header::HeaderMap::new();
                     for header in listen_response.headers {
                         let key = reqwest::header::HeaderName::from_bytes(header.0.as_bytes())
                             .unwrap();

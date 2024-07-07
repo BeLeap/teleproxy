@@ -44,3 +44,9 @@ impl TryFrom<(&HeaderName, &HeaderValue)> for Header {
         })
     }
 }
+
+impl From<Header> for (String, String) {
+    fn from(val: Header) -> Self {
+        (val.key, val.value)
+    }
+}
