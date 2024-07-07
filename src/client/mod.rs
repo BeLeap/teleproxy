@@ -3,7 +3,11 @@ pub mod http_client;
 use std::collections::HashMap;
 use tokio_stream::{wrappers::ReceiverStream, StreamExt};
 
-use crate::{client::http_client::HttpClient, dto::{self, http_response::HttpResponse}, proto};
+use crate::{
+    client::http_client::HttpClient,
+    dto::{self, http_response::HttpResponse},
+    proto,
+};
 
 type Client = proto::teleproxy::teleproxy_client::TeleproxyClient<tonic::transport::Channel>;
 
@@ -90,20 +94,33 @@ pub async fn listen(
                     let client = http_request.into_reqwest(http_client);
                     let http_response = client.send().await;
 
-                    let http_response = match http_response {
-                        Ok(v) => v,
+                    match http_response {
+                        Ok(http_response) => {
+                            let http_response = HttpResponse::from_reqwest(http_response).await;
+                            let listen_request =
+                                http_response.into_proto("".to_string(), id.clone());
+
+                            let _ = stream_tx.send(listen_request).await;
+                        }
                         Err(err) => {
-                            panic!("Failed to send request: {}", err)
-                        },
+                            log::error!("Failed to send request: {}", err);
+                            let _ = stream_tx
+                                .send(
+                                    dto::http_response::INTERNAL_ERROR_RESPONSE
+                                        .into_proto(api_key.to_string(), id.to_string()),
+                                )
+                                .await;
+                        }
                     };
-
-                    let http_response = HttpResponse::from_reqwest(http_response).await;
-                    let listen_request = http_response.into_proto("".to_string(), id.clone());
-
-                    let _ = stream_tx.send(listen_request).await;
                 }
                 phase => {
-                    panic!("Unsupported phase: {:?}", phase)
+                    log::error!("Unsupported phase: {:?}", phase);
+                    let _ = stream_tx
+                        .send(
+                            dto::http_response::INTERNAL_ERROR_RESPONSE
+                                .into_proto(api_key.to_string(), id.to_string()),
+                        )
+                        .await;
                 }
             }
         }

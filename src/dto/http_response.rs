@@ -1,6 +1,12 @@
 use crate::{dto, proto};
 use http::StatusCode;
 
+pub const INTERNAL_ERROR_RESPONSE: HttpResponse = HttpResponse {
+    status_code: StatusCode::INTERNAL_SERVER_ERROR,
+    headers: vec![],
+    body: vec![],
+};
+
 #[derive(Debug)]
 pub struct HttpResponse {
     pub status_code: StatusCode,
