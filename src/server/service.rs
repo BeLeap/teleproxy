@@ -76,8 +76,8 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
                 }
             },
             None => {
-                log::error!("Failed to get next request");
-                panic!("");
+                log::error!("Failed to get first request");
+                panic!("Failed to get first request");
             }
         };
         let (tx, mut rx) = tokio::sync::mpsc::channel::<(
@@ -91,33 +91,35 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
 
         tokio::spawn(async move {
             while let Some((request, response_tx)) = rx.recv().await {
-                let response_result = stream_tx
-                    .send(Ok(request.into()))
-                    .await;
-                match response_result {
-                    Ok(_) => {}
-                    Err(_) => todo!(),
-                }
-
-                let mut response: Option<dto::http_response::HttpResponse> = None;
-                while let Some(result) = in_stream.next().await {
-                    if let Ok(request) = result {
-                        match dto::http_response::HttpResponse::try_from(request) {
-                            Ok(request) => {
-                                response = Some(request);
-                                break;
+                let response_result = stream_tx.send(Ok(request.into())).await;
+                let send_result = match response_result {
+                    Ok(_) => {
+                        let response = loop {
+                            if let Some(Ok(request)) = in_stream.next().await {
+                                match dto::http_response::HttpResponse::try_from(request) {
+                                    Ok(response) => {
+                                        break response;
+                                    }
+                                    Err(err) => {
+                                        log::error!("Failed to convert to dto: {:?}", err);
+                                        break dto::http_response::INTERNAL_ERROR_RESPONSE;
+                                    }
+                                }
                             }
-                            Err(err) => {
-                                log::error!("Failed to convert to dto: {:?}", err)
-                            }
-                        }
+                        };
+                        response_tx.send(response)
                     }
-                }
+                    Err(err) => {
+                        log::error!("Failed to send request: {:?}", err);
+                        response_tx.send(dto::http_response::INTERNAL_ERROR_RESPONSE)
+                    }
+                };
 
-                let response_forward_result = response_tx.send(response.unwrap());
-                match response_forward_result {
+                match send_result {
                     Ok(_) => {}
-                    Err(_) => todo!(),
+                    Err(err) => {
+                        log::error!("Failed to pass response: {:?}", err);
+                    }
                 }
             }
         });
