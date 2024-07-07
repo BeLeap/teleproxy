@@ -56,8 +56,12 @@ impl ProxyHttp for TeleproxyPingoraService {
 
                 match response_rx.await {
                     Ok(response) => {
-                        let response_header =
+                        let mut response_header =
                             ResponseHeader::build(response.status_code.as_u16(), None).unwrap();
+                        for header in response.headers {
+                            let _ = response_header.append_header(header.key, header.value);
+                        }
+
                         if let Err(err) = session
                             .write_response_header(Box::new(response_header))
                             .await

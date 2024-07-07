@@ -1,5 +1,6 @@
 use std::hash::Hash;
 use http::{HeaderName, HeaderValue};
+use pingora::http::ResponseHeader;
 use serde::Serialize;
 
 #[derive(Eq, Clone, Serialize, Debug)]
@@ -27,5 +28,15 @@ impl Header {
             key: name.to_string(),
             value: value.to_str().unwrap().to_string(),
         }
+    }
+}
+
+pub enum HeaderConversionError {}
+
+impl TryInto<pingora::http::ResponseHeader> for Header {
+    type Error = HeaderConversionError;
+
+    fn try_into(self) -> Result<pingora::http::ResponseHeader, Self::Error> {
+        todo!()
     }
 }
