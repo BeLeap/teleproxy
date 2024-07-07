@@ -1,13 +1,13 @@
 mod service;
 
 use self::service::TeleproxyImpl;
-use crate::{forwardconfig::store::ForwardConfigStore, forwardhandler::ForwardHandler, proto};
+use crate::{config, forwardconfig::store::ForwardConfigStore, forwardhandler::ForwardHandler, proto};
 use log::info;
 use std::sync::Arc;
 use tonic::transport::Server;
 
 pub async fn run(
-    port: u16,
+    server_config: config::server::Server,
     forward_config_store: Arc<ForwardConfigStore>,
     forward_handler: Arc<ForwardHandler>,
 ) -> Result<(), Box<dyn std::error::Error>> {
@@ -16,8 +16,8 @@ pub async fn run(
         .build()
         .unwrap();
 
-    let addr = format!("[::]:{}", port).parse()?;
-    info!("listening port: {}", port);
+    let addr = format!("[::]:{}", server_config.port).parse()?;
+    info!("listening port: {}", server_config.port);
 
     let svc = proto::teleproxy::teleproxy_server::TeleproxyServer::with_interceptor(
         TeleproxyImpl {

@@ -8,6 +8,7 @@ pub struct Server {
     pub target_port: u16,
     pub port: u16,
     pub server_port: u16,
+    pub api_key: String,
 }
 
 impl Server {
