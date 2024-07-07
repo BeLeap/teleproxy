@@ -1,4 +1,5 @@
 pub mod header;
+pub mod phase;
 
 use http::StatusCode;
 use crate::proto;

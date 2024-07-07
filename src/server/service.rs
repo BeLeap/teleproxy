@@ -1,5 +1,5 @@
 use crate::{
-    dto::{self, header::Header},
+    dto::{self, header::Header, phase::ListenPhase},
     forwardconfig::store::ForwardConfigStore,
     forwardhandler::ForwardHandler, proto,
 };
@@ -58,7 +58,13 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
 
         let id = match in_stream.next().await {
             Some(result) => match result {
-                Ok(request) => request.id,
+                Ok(request) => {
+                    if request.phase == ListenPhase::Init as i32 {
+                        request.id
+                    } else {
+                        panic!("First request for listen must be INIT")
+                    }
+                },
                 Err(e) => {
                     log::error!("{:?}", e);
                     panic!("{:?}", e);
@@ -93,6 +99,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
 
                 let response_result = stream_tx
                     .send(Ok(proto::teleproxy::ListenResponse {
+                        phase: ListenPhase::Tunneling as i32,
                         method: request.method,
                         url: request.uri,
                         headers,

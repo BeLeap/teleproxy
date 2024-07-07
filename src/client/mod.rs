@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use tokio_stream::{wrappers::ReceiverStream, StreamExt};
 
-use crate::proto;
+use crate::{dto::phase::ListenPhase, proto};
 
 type Client = proto::teleproxy::teleproxy_client::TeleproxyClient<tonic::transport::Channel>;
 
@@ -69,6 +69,7 @@ pub async fn listen(
     let _ = stream_tx.send(proto::teleproxy::ListenRequest {
         api_key: api_key.to_string(),
         id: id.to_string(),
+        phase: 0,
         status_code: 0,
         headers: HashMap::new(),
         body: Vec::new(),
@@ -121,6 +122,7 @@ pub async fn listen(
         let listen_request = proto::teleproxy::ListenRequest {
             api_key: "".to_string(),
             id: id.to_string(),
+            phase: ListenPhase::Tunneling as i32,
             status_code,
             headers,
             body,
