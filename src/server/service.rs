@@ -1,7 +1,8 @@
 use crate::{
     dto::{self, header::Header, phase::ListenPhase},
     forwardconfig::store::ForwardConfigStore,
-    forwardhandler::ForwardHandler, proto,
+    forwardhandler::ForwardHandler,
+    proto,
 };
 use std::{pin::Pin, sync::Arc};
 use tokio_stream::{wrappers::ReceiverStream, StreamExt};
@@ -34,13 +35,17 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
 
         let id = ulid::Ulid::new().to_string();
 
-        self.forward_config_store
-            .insert(Header {
-                key: request.header_key, 
+        self.forward_config_store.insert(
+            Header {
+                key: request.header_key,
                 value: request.header_value,
-            }, &id);
+            },
+            &id,
+        );
 
-        Ok(tonic::Response::new(proto::teleproxy::RegisterResponse { id }))
+        Ok(tonic::Response::new(proto::teleproxy::RegisterResponse {
+            id,
+        }))
     }
 
     type ListenStream = Pin<
@@ -64,7 +69,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
                     } else {
                         panic!("First request for listen must be INIT")
                     }
-                },
+                }
                 Err(e) => {
                     log::error!("{:?}", e);
                     panic!("{:?}", e);
@@ -89,12 +94,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
                 let headers = request
                     .headers
                     .iter()
-                    .map(|header| {
-                        (
-                            header.key.clone(),
-                            header.value.clone(),
-                        )
-                    })
+                    .map(|header| (header.key.clone(), header.value.clone()))
                     .collect();
 
                 let response_result = stream_tx
@@ -114,14 +114,21 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
                 let mut response: Option<dto::Response> = None;
                 while let Some(result) = in_stream.next().await {
                     if let Ok(request) = result {
-                        response = Some(dto::Response::from_pb(request));
-                        break;
+                        match dto::Response::try_from(request) {
+                            Ok(request) => {
+                                response = Some(request);
+                                break;
+                            }
+                            Err(err) => {
+                                log::error!("Failed to convert to dto: {:?}", err)
+                            }
+                        }
                     }
                 }
 
                 let response_forward_result = response_tx.send(response.unwrap());
                 match response_forward_result {
-                    Ok(_) => {},
+                    Ok(_) => {}
                     Err(_) => todo!(),
                 }
             }
@@ -141,7 +148,9 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
 
         self.forward_config_store.remove_by_id(&request.id);
 
-        Ok(tonic::Response::new(proto::teleproxy::DeregisterResponse {}))
+        Ok(tonic::Response::new(
+            proto::teleproxy::DeregisterResponse {},
+        ))
     }
 
     async fn dump(
