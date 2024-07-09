@@ -31,7 +31,7 @@ serde = { version = "1.0.203", features = ["derive"] }
 serde_yml = "0.0.10"
 tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread"] }
 tokio-stream = "0.1.15"
-tonic = "0.11.0"
+tonic = { version = "0.11.0", features = ["tls", "tls-roots"] }
 tonic-reflection = "0.11.0"
 ulid = "1.1.2"
 
