@@ -69,4 +69,4 @@ USER appuser
 COPY --from=build /bin/teleproxy /bin/
 
 # What the container should run when it is started.
-CMD ["/bin/teleproxy"]
+CMD ["/bin/teleproxy", "server"]
