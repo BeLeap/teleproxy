@@ -26,7 +26,7 @@ pub fn run(
         service::TeleproxyPingoraService {
             forward_config_store,
             forward_handler,
-            target: (target_ip, server_config.port),
+            target: (target_ip, server_config.target_port),
         },
     );
     teleproxy_service.add_tcp(&format!("0.0.0.0:{}", server_config.port).to_string());

@@ -33,6 +33,7 @@ impl ProxyHttp for TeleproxyPingoraService {
         });
 
         match id {
+            None => Ok(false),
             Some(id) => {
                 log::info!("forwarding requsest to id: {}", id);
                 let body = match session.read_request_body().await {
@@ -95,7 +96,6 @@ impl ProxyHttp for TeleproxyPingoraService {
                     }
                 }
             }
-            None => Ok(false),
         }
     }
 
