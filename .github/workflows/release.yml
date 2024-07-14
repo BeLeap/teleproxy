@@ -1,0 +1,23 @@
+name: Release
+
+on:
+  push:
+    # tags:
+    #   - v*.*.*
+
+jobs:
+  build-binary:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch:
+          - x86_64
+          - aarch64
+        vendor-sys-abi:
+          - unknown-linux-gnu
+          - apple-darwin
+          - pc-windows-msvc
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
