@@ -14,7 +14,7 @@ jobs:
           - rust: x86_64
             protoc: x86_64
           - rust: aarch64
-            rust: aarch_64
+            protoc: aarch_64
         os:
           - runs-on: ubuntu-latest
             protoc: linux
