@@ -16,7 +16,7 @@ jobs:
         vendor-sys-abi:
           - unknown-linux-gnu
           - apple-darwin
-          - pc-windows-msvc
+          # - pc-windows-msvc
     steps:
       - name: checkout
         uses: actions/checkout@v4
