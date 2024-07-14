@@ -6,14 +6,13 @@ on:
     #   - v*.*.*
 
 jobs:
-  build-binary:
+  build-linux-binary:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         target:
           - x86_64-unknown-linux-gnu
           - aarch64-unknown-linux-gnu
-          - x86_64-pc-windows-gnu
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -26,13 +25,36 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ runner.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: setup cross
         run: |
           cargo install cross
       - name: build binary
         run: |
           cross build --release --locked --target ${{ matrix.target }}
+      - name: temp
+        run: |
+          ls -alR
+  build-mac-binary:
+    runs-on: macos-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-${{ runner.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: setup rust-toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: build binary
+        run: |
+          cargo build --releaes --locked
       - name: temp
         run: |
           ls -alR
