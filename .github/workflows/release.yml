@@ -36,16 +36,13 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.arch }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: setup protoc
         uses: arduino/setup-protoc@v3
-      - name: install gcc-aarch64-linux-gnu
-        if: ${{ matrix.arch == 'aarch64' && matrix.os.runs-on == 'ubuntu-latest' }}
-        run: |
-          sudo apt-get install gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu -y
-      - name: setup cross
-        run: |
-          cargo install cross
-      - name: build
-        run: |
-          cross build --release --target ${{ matrix.arch }}-${{ matrix.os.vendor-sys-abi }}
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@v0
+        with:
+          command: build
+          target: ${{ matrix.arch }}-${{ matrix.os.vendor-sys-abi }}
+          args: "--locked --release"
+          strip: true
       - name: temp
         run: |
           ls -alR
