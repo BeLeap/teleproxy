@@ -26,7 +26,7 @@ jobs:
           target: ${{ matrix.arch }}-${{ matrix.vendor-sys-abi }}
       - name: setup cross build
         run: |
-          cargo install cross --git https://github.com/cross-rs/cross
+          cargo install cross
       - name: build
         run: |
-          cargo build --target ${{ matrix.arch }}-${{ matrix.vendor-sys-abi }}
+          cross build --target ${{ matrix.arch }}-${{ matrix.vendor-sys-abi }}
