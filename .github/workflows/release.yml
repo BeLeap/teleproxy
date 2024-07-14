@@ -56,3 +56,28 @@ jobs:
       - name: temp
         run: |
           ls -alR
+  build-mac-binary:
+    runs-on: windows-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-${{ runner.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: setup rust-toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: setup protoc
+        uses: arduino/setup-protoc@v3
+      - name: build binary
+        run: |
+          cargo build --release --locked
+      - name: temp
+        run: |
+          ls -alR
