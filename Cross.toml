@@ -3,3 +3,6 @@ pre-build = "./scripts/pre-build-linux.sh"
 
 [target.aarch64-unknown-linux-gnu]
 pre-build = "./scripts/pre-build-linux.sh"
+
+[target.x86_64-pc-windows-gnu]
+pre-build = "./scripts/pre-build-windows.sh"
