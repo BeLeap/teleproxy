@@ -24,7 +24,8 @@ jobs:
       - name: setup rust-toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: setup protoc
-        uses: arduino/setup-protoc@v3
+        run: |
+          sudo apt-get install protobuf-compiler -y
       - name: build binary
         run: |
           cargo build --release --locked
@@ -49,7 +50,8 @@ jobs:
       - name: setup rust-toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: setup protoc
-        uses: arduino/setup-protoc@v3
+        run: |
+          brew install protobuf
       - name: build binary
         run: |
           cargo build --release --locked
