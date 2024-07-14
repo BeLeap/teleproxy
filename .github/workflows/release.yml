@@ -29,9 +29,11 @@ jobs:
       - name: build binary
         run: |
           cargo build --release --locked
-      - name: temp
-        run: |
-          ls -alR
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: teleproxy-x86_64-unknown-linux-gnu
+          path: ./target/release/teleproxy
   build-mac-binary:
     runs-on: macos-latest
     steps:
@@ -55,9 +57,11 @@ jobs:
       - name: build binary
         run: |
           cargo build --release --locked
-      - name: temp
-        run: |
-          ls -alR
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: teleproxy-aarch64-apple-darwin
+          path: ./target/release/teleproxy
   build-windows-binary:
     runs-on: windows-latest
     steps:
@@ -80,6 +84,8 @@ jobs:
       - name: build binary
         run: |
           cargo build --release --locked
-      - name: temp
-        run: |
-          ls -alR
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: teleproxy-x86_64-pc-windows-msvc
+          path: ./target/release/teleproxy
