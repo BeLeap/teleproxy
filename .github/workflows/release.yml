@@ -20,4 +20,10 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
-
+      - name: setup rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          target: ${{ matrix.arch }}-${{ matrix.vendor-sys-abi }}
+      - name: build
+        run: |
+          cargo build --target ${{ matrix.arch }}-${{ matrix.vendor-sys-abi }}
