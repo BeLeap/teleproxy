@@ -40,9 +40,12 @@ jobs:
         if: ${{ matrix.arch == 'aarch64' && matrix.os.runs-on == 'ubuntu-latest' }}
         run: |
           sudo apt-get install gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu -y
+      - name: setup cross
+        run: |
+          cargo install cross
       - name: build
         run: |
-          cargo build --release --target ${{ matrix.arch }}-${{ matrix.os.vendor-sys-abi }}
+          cross build --release --target ${{ matrix.arch }}-${{ matrix.os.vendor-sys-abi }}
       - name: temp
         run: |
           ls -alR
