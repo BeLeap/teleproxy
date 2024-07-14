@@ -8,11 +8,6 @@ on:
 jobs:
   build-linux-binary:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target:
-          - x86_64-unknown-linux-gnu
-          - aarch64-unknown-linux-gnu
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -26,12 +21,13 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-${{ runner.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: setup cross
-        run: |
-          cargo install cross
+      - name: setup rust-toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: setup protoc
+        uses: arduino/setup-protoc@v3
       - name: build binary
         run: |
-          cross build --release --locked --target ${{ matrix.target }}
+          cargo build --releaes --locked
       - name: temp
         run: |
           ls -alR
@@ -52,6 +48,8 @@ jobs:
           key: ${{ runner.os }}-${{ runner.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: setup rust-toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: setup protoc
+        uses: arduino/setup-protoc@v3
       - name: build binary
         run: |
           cargo build --releaes --locked
