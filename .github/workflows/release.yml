@@ -7,26 +7,23 @@ on:
 
 jobs:
   build-binary:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os.runs-on }}
     strategy:
       matrix:
         arch:
           - x86_64
           - aarch64
-        vendor-sys-abi:
-          - unknown-linux-gnu
-          - apple-darwin
-          # - pc-windows-msvc
+        os:
+          - {runs-on: ubuntu-latest, vendor-sys-abi: unknown-linux-gnu}
+          - {runs-on: macos-latest, vendor-sys-abi: apple-darwin}
+          - {runs-on: windows-latest, vendor-sys-abi: pc-windows-msvc}
     steps:
       - name: checkout
         uses: actions/checkout@v4
       - name: setup rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          target: ${{ matrix.arch }}-${{ matrix.vendor-sys-abi }}
-      - name: setup cross build
-        run: |
-          cargo install cross
+          target: ${{ matrix.arch }}-${{ matrix.os.vendor-sys-abi }}
       - name: build
         run: |
-          cross build --target ${{ matrix.arch }}-${{ matrix.vendor-sys-abi }}
+          cargo build --target ${{ matrix.arch }}-${{ matrix.os.vendor-sys-abi }}
