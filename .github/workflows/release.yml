@@ -11,23 +11,33 @@ jobs:
     strategy:
       matrix:
         arch:
-          - x86_64
-          - aarch64
+          - rust: x86_64
+            protoc: x86_64
+          - rust: aarch64
+            rust: aarch_64
         os:
-          - {runs-on: ubuntu-latest, vendor-sys-abi: unknown-linux-gnu}
+          - runs-on: ubuntu-latest
+            protoc: linux
+            vendor-sys-abi: unknown-linux-gnu
           # - {runs-on: macos-latest, vendor-sys-abi: apple-darwin}
           # - {runs-on: windows-latest, vendor-sys-abi: pc-windows-msvc}
     steps:
       - name: checkout
         uses: actions/checkout@v4
-      - name: setup protoc
-        uses: arduino/setup-protoc@v3
+      - name: pre.sh
+        run: |
+          echo <<EOF
+          curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v25.1/protoc-25.1-${{ matrix.os.protoc }}-          ${{ matrix.arch.protoc }}.zip
+          unzip protoc-25.1-linux-x86_64.zip -d $HOME/.local
+          export PATH="$PATH:$HOME/.local/bin"
+          EOF
       - name: build binary
         uses: rust-build/rust-build.action@v1.4.5
         env:
+          PRE_BUILD: pre.sh
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          RUSTTARGET: ${{ matrix.arch }}-${{ matrix.os.vendor-sys-abi }}
+          RUSTTARGET: ${{ matrix.arch.rust }}-${{ matrix.os.vendor-sys-abi }}
           ARCHIVE_TYPES: tar.gz
       - name: temp
         run: |
