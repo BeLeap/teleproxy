@@ -42,4 +42,7 @@ jobs:
           sudo apt-get install gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu -y
       - name: build
         run: |
-          cargo build --target ${{ matrix.arch }}-${{ matrix.os.vendor-sys-abi }}
+          cargo build --release --target ${{ matrix.arch }}-${{ matrix.os.vendor-sys-abi }}
+      - name: temp
+        run: |
+          ls -alR
