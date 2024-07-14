@@ -62,30 +62,31 @@ jobs:
         with:
           name: teleproxy-aarch64-apple-darwin
           path: ./target/release/teleproxy
-  build-windows-binary:
-    runs-on: windows-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v4
-      - name: setup cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-${{ runner.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: setup rust-toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: setup protoc
-        uses: arduino/setup-protoc@v3
-      - name: build binary
-        run: |
-          cargo build --release --locked
-      - name: upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: teleproxy-x86_64-pc-windows-msvc
-          path: ./target/release/teleproxy
+  # cannot be built until client is separated
+  # build-windows-binary:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - name: checkout
+  #       uses: actions/checkout@v4
+  #     - name: setup cache
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: |
+  #           ~/.cargo/bin/
+  #           ~/.cargo/registry/index/
+  #           ~/.cargo/registry/cache/
+  #           ~/.cargo/git/db/
+  #           target/
+  #         key: ${{ runner.os }}-${{ runner.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+  #     - name: setup rust-toolchain
+  #       uses: actions-rust-lang/setup-rust-toolchain@v1
+  #     - name: setup protoc
+  #       uses: arduino/setup-protoc@v3
+  #     - name: build binary
+  #       run: |
+  #         cargo build --release --locked
+  #     - name: upload artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: teleproxy-x86_64-pc-windows-msvc
+  #         path: ./target/release/teleproxy
