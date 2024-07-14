@@ -20,20 +20,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
-      - name: setup rust toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          target: ${{ matrix.arch }}-${{ matrix.os.vendor-sys-abi }}
-      - name: setup cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-${{ matrix.arch }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: setup protoc
         uses: arduino/setup-protoc@v3
       - name: Build binary
