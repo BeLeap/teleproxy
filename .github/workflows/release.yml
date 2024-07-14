@@ -56,7 +56,7 @@ jobs:
       - name: temp
         run: |
           ls -alR
-  build-mac-binary:
+  build-windows-binary:
     runs-on: windows-latest
     steps:
       - name: checkout
