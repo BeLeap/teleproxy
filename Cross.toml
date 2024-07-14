@@ -1,8 +1,0 @@
-[target.x86_64-unknown-linux-gnu]
-pre-build = "./scripts/pre-build.sh"
-
-[target.aarch64-unknown-linux-gnu]
-pre-build = "./scripts/pre-build.sh"
-
-[target.x86_64-pc-windows-gnu]
-pre-build = "./scripts/pre-build.sh"
