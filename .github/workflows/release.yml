@@ -36,10 +36,10 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.arch }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: setup protoc
         uses: arduino/setup-protoc@v3
-      # - name: install gcc-aarch64-linux-gnu
-      #   if: ${{ matrix.arch == 'aarch64' && matrix.os.runs-on == 'ubuntu-latest' }}
-      #   run: |
-      #     sudo apt-get install gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu -y
+      - name: install gcc-aarch64-linux-gnu
+        if: ${{ matrix.arch == 'aarch64' && matrix.os.runs-on == 'ubuntu-latest' }}
+        run: |
+          sudo apt-get install aarch64-linux-musl-gcc -y
       - name: build
         run: |
           cargo build --target ${{ matrix.arch }}-${{ matrix.os.vendor-sys-abi }}
