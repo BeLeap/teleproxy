@@ -7,14 +7,12 @@ on:
 
 jobs:
   build-binary:
-    runs-on: ${{ matrix.target.runs-on }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         target:
-          - runs-on: ubuntu-latest
-            triplet: x86_64-unknown-linux-gnu
-          - runs-on: ubuntu-latest
-            triplet: aarch64-unknown-linux-gnu
+          - x86_64-unknown-linux-gnu
+          - aarch64-unknown-linux-gnu
           # - {runs-on: macos-latest, vendor-sys-abi: apple-darwin}
           # - {runs-on: windows-latest, vendor-sys-abi: pc-windows-msvc}
     steps:
@@ -25,7 +23,7 @@ jobs:
           cargo install cross
       - name: build binary
         run: |
-          cross build --release --locked --target ${{ matrix.target.triplet }}
+          cross build --release --locked --target ${{ matrix.target }}
       - name: temp
         run: |
           ls -alR
