@@ -22,13 +22,13 @@ jobs:
         uses: actions/checkout@v4
       - name: setup protoc
         uses: arduino/setup-protoc@v3
-      - name: Build binary
-        uses: houseabsolute/actions-rust-cross@v0
+      - name: build binary
+        uses: rust-build/rust-build.action@v1.4.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          command: build
-          target: ${{ matrix.arch }}-${{ matrix.os.vendor-sys-abi }}
-          args: "--locked --release"
-          strip: true
+          RUSTTARGET: ${{ matrix.arch }}-${{ matrix.os.vendor-sys-abi }}
+          ARCHIVE_TYPES: tar.gz
       - name: temp
         run: |
           ls -alR
