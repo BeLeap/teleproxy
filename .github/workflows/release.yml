@@ -14,8 +14,6 @@ jobs:
           - x86_64-unknown-linux-gnu
           - aarch64-unknown-linux-gnu
           - x86_64-pc-windows-gnu
-          # - {runs-on: macos-latest, vendor-sys-abi: apple-darwin}
-          # - {runs-on: windows-latest, vendor-sys-abi: pc-windows-msvc}
     steps:
       - name: checkout
         uses: actions/checkout@v4
