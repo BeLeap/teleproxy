@@ -25,7 +25,7 @@ jobs:
         with:
           target: ${{ matrix.arch }}-${{ matrix.os.vendor-sys-abi }}
       - name: install sudo apt-get install gcc-aarch64-linux-gnu
-        if: ${{ matrix.arch == "aarch64" && matrix.os.runs-on == "ubuntu-latest" }}
+        if: ${{ matrix.arch == 'aarch64' && matrix.os.runs-on == 'ubuntu-latest' }}
         run: |
           sudo apt-get install gcc-aarch64-linux-gnu -y
       - name: build
