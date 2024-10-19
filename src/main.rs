@@ -13,7 +13,7 @@ use env_logger::Env;
 
 fn main() {
     let env = Env::default()
-        .filter_or("RUST_LOG", "INFO")
+        .filter_or("RUST_LOG", "ERROR")
         .write_style_or("RUST_LOG_STYLE", "always");
 
     env_logger::init_from_env(env);
