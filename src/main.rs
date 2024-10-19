@@ -1,6 +1,6 @@
-mod config;
 mod cli;
 mod client;
+mod config;
 mod dto;
 mod forwardconfig;
 mod forwardhandler;
@@ -13,7 +13,7 @@ use env_logger::Env;
 
 fn main() {
     let env = Env::default()
-        .filter_or("RUST_LOG", "trace")
+        .filter_or("RUST_LOG", "INFO")
         .write_style_or("RUST_LOG_STYLE", "always");
 
     env_logger::init_from_env(env);
