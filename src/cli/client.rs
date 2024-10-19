@@ -63,6 +63,16 @@ pub fn handler(args: &ClientArgs) {
                         .await;
                 });
         }
-        Some(command) => todo!(),
+        Some(command) => match command.as_str() {
+            "dump" => {
+                todo!();
+            }
+            "flush" => {
+                todo!();
+            }
+            _ => {
+                todo!();
+            }
+        },
     }
 }
