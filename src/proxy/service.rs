@@ -64,7 +64,14 @@ impl ProxyHttp for TeleproxyPingoraService {
                 let request_sender = self.forward_handler.get_sender(&id);
 
                 let (response_tx, response_rx) = tokio::sync::oneshot::channel();
-                let _ = request_sender.send((request, response_tx)).await;
+                let result = request_sender.send((request, response_tx)).await;
+                match result {
+                    Ok(_) => {}
+                    Err(e) => tracing::error!(
+                        err = format!("{:#?}", e),
+                        "failed to request to forward handler"
+                    ),
+                };
 
                 match response_rx.await {
                     Ok(response) => {
