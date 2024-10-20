@@ -12,20 +12,31 @@ use std::env;
 
 use clap::Parser;
 
+enum LogFormat {
+    JSON,
+    PRETTY,
+}
+
 fn main() {
-    match env::var("RUST_LOG_FORMAT") {
+    let format = match env::var("RUST_LOG_FORMAT") {
         Ok(format) => match format.as_str() {
-            "json" => {
-                tracing_subscriber::fmt().json().init();
-            }
-            _ => {
-                tracing_subscriber::fmt().compact().init();
+            "json" => LogFormat::JSON,
+            f => {
+                eprintln!("unsupported log format {} fallback to pretty", f);
+                LogFormat::PRETTY
             }
         },
-        Err(_) => {
-            tracing_subscriber::fmt().compact().init();
-        }
+        Err(_) => LogFormat::PRETTY,
     };
+
+    match format {
+        LogFormat::JSON => {
+            tracing_subscriber::fmt().json().init();
+        }
+        LogFormat::PRETTY => {
+            tracing_subscriber::fmt().pretty().init();
+        }
+    }
 
     let cli = cli::Cli::parse();
 
