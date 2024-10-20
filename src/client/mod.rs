@@ -83,7 +83,13 @@ pub async fn listen(
 
     loop {
         if let Some(result) = out_stream.next().await {
-            let listen_response = result.unwrap();
+            let listen_response = match result {
+                Ok(resp) => resp,
+                Err(e) => {
+                    log::error!("{:#?}", e);
+                    continue;
+                }
+            };
 
             let request_send_result = match listen_response.phase.try_into().unwrap() {
                 dto::phase::ListenPhase::Tunneling => {
