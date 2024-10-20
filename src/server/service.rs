@@ -21,7 +21,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
         request: tonic::Request<proto::teleproxy::EchoRequest>,
     ) -> tonic::Result<tonic::Response<proto::teleproxy::EchoResponse>> {
         let request = request.into_inner();
-        log::trace!("health requested with payload {:?}", request);
+        log::debug!("health requested with payload {:?}", request);
 
         let response = proto::teleproxy::EchoResponse {};
         Ok(tonic::Response::new(response))
@@ -32,7 +32,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
         request: tonic::Request<proto::teleproxy::RegisterRequest>,
     ) -> tonic::Result<tonic::Response<proto::teleproxy::RegisterResponse>> {
         let request = request.into_inner();
-        log::trace!("register requested with payload {:?}", request);
+        log::debug!("register requested with payload {:?}", request);
 
         if request.api_key != self.api_key {
             return Err(tonic::Status::unauthenticated("Invalid api key"));
@@ -145,7 +145,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
         request: tonic::Request<proto::teleproxy::DeregisterRequest>,
     ) -> tonic::Result<tonic::Response<proto::teleproxy::DeregisterResponse>> {
         let request = request.into_inner();
-        log::trace!("deregister requested with payload {:?}", request);
+        log::debug!("deregister requested with payload {:?}", request);
 
         if request.api_key != self.api_key {
             return Err(tonic::Status::unauthenticated("Invalid api key"));
@@ -163,7 +163,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
         request: tonic::Request<proto::teleproxy::DumpRequest>,
     ) -> Result<tonic::Response<proto::teleproxy::DumpResponse>, tonic::Status> {
         let request = request.into_inner();
-        log::trace!("dump requested with payload {:?}", request);
+        log::debug!("dump requested with payload {:?}", request);
 
         if request.api_key != self.api_key {
             return Err(tonic::Status::unauthenticated("Invalid api key"));
@@ -188,7 +188,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
         request: tonic::Request<proto::teleproxy::FlushRequest>,
     ) -> tonic::Result<tonic::Response<proto::teleproxy::FlushResponse>> {
         let request = request.into_inner();
-        log::trace!("flush requested with payload {:?}", request);
+        log::debug!("flush requested with payload {:?}", request);
 
         if request.api_key != self.api_key {
             return Err(tonic::Status::unauthenticated("Invalid api key"));
