@@ -62,7 +62,11 @@ impl ProxyHttp for TeleproxyPingoraService {
 
                 match response_rx.await {
                     Ok(response) => {
-                        log::trace!("Received response for forwarded request: {:?}", response);
+                        log::trace!(
+                            "[forward {}] received response for forwarded request: {:?}",
+                            id,
+                            response,
+                        );
                         let mut response_header =
                             ResponseHeader::build(response.status_code.as_u16(), None).unwrap();
                         for header in response.headers {
