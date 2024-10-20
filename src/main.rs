@@ -22,19 +22,26 @@ fn main() {
         Ok(format) => match format.as_str() {
             "json" => LogFormat::JSON,
             f => {
-                eprintln!("unsupported log format {} fallback to pretty", f);
+                eprintln!("unsupported log format '{}' fallback to pretty", f);
                 LogFormat::PRETTY
             }
         },
         Err(_) => LogFormat::PRETTY,
     };
+    let filter = tracing_subscriber::EnvFilter::from_default_env();
 
     match format {
         LogFormat::JSON => {
-            tracing_subscriber::fmt().json().init();
+            tracing_subscriber::fmt()
+                .with_env_filter(filter)
+                .json()
+                .init();
         }
         LogFormat::PRETTY => {
-            tracing_subscriber::fmt().pretty().init();
+            tracing_subscriber::fmt()
+                .with_env_filter(filter)
+                .pretty()
+                .init();
         }
     }
 

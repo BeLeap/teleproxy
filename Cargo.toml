@@ -33,7 +33,7 @@ tokio-stream = "0.1.15"
 tonic = { version = "0.11.0", features = ["tls", "tls-roots"] }
 tonic-reflection = "0.11.0"
 tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.18", features = ["fmt", "std", "json"] }
+tracing-subscriber = { version = "0.3.18", features = ["fmt", "std", "json", "env-filter"] }
 ulid = "1.1.2"
 
 [build-dependencies]
