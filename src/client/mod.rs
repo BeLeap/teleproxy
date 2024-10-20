@@ -86,8 +86,8 @@ pub async fn listen(
         if let Some(result) = out_stream.next().await {
             let listen_response = match result {
                 Ok(resp) => resp,
-                Err(e) => {
-                    log::error!("{:#?}", e);
+                Err(err) => {
+                    tracing::error!(id, err = format!("{:#?}", err), "unknown error");
                     continue;
                 }
             };
@@ -100,7 +100,11 @@ pub async fn listen(
                     };
                     match http_request.try_into_reqwest(http_client) {
                         Err(e) => {
-                            log::error!("Failed to convert request into reqwest: {:?}", e);
+                            tracing::error!(
+                                id,
+                                err = format!("{:#?}", e),
+                                "failed to convert request into reqwest",
+                            );
                             stream_tx.send(
                                 dto::http_response::INTERNAL_ERROR_RESPONSE
                                     .into_proto(api_key.to_string(), id.to_string()),
@@ -111,7 +115,11 @@ pub async fn listen(
 
                             match http_response {
                                 Err(err) => {
-                                    log::error!("Failed to send request: {:?}", err);
+                                    tracing::error!(
+                                        id,
+                                        err = format!("{:#?}", err),
+                                        "failed to send request"
+                                    );
                                     stream_tx.send(
                                         dto::http_response::INTERNAL_ERROR_RESPONSE
                                             .into_proto(api_key.to_string(), id.to_string()),
@@ -120,9 +128,10 @@ pub async fn listen(
                                 Ok(http_response) => {
                                     match HttpResponse::from_reqwest(http_response).await {
                                         Err(err) => {
-                                            log::error!(
-                                                "Failed to convert response into dto: {:?}",
-                                                err
+                                            tracing::error!(
+                                                id,
+                                                err = format!("{:#?}", err),
+                                                "Failed to convert response into dto",
                                             );
                                             stream_tx.send(
                                                 dto::http_response::INTERNAL_ERROR_RESPONSE
@@ -145,7 +154,7 @@ pub async fn listen(
                     }
                 }
                 phase => {
-                    log::error!("Unsupported phase: {:?}", phase);
+                    tracing::error!(id, phase = format!("{:#?}", phase), "unsupported phase");
                     stream_tx.send(
                         dto::http_response::INTERNAL_ERROR_RESPONSE
                             .into_proto(api_key.to_string(), id.to_string()),
@@ -155,7 +164,7 @@ pub async fn listen(
             match request_send_result.await {
                 Ok(_) => {}
                 Err(err) => {
-                    log::error!("Failed to pass listen_request: {}", err);
+                    tracing::error!(err = format!("{:#?}", err), "failed to pass listen_request");
                 }
             }
         }
