@@ -164,7 +164,11 @@ pub async fn listen(
             match request_send_result.await {
                 Ok(_) => {}
                 Err(err) => {
-                    tracing::error!(err = format!("{:#?}", err), "failed to pass listen_request");
+                    tracing::error!(
+                        id,
+                        err = format!("{:#?}", err),
+                        "failed to pass listen_request"
+                    );
                 }
             }
         }
