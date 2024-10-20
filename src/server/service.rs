@@ -21,7 +21,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
         request: tonic::Request<proto::teleproxy::EchoRequest>,
     ) -> tonic::Result<tonic::Response<proto::teleproxy::EchoResponse>> {
         let request = request.into_inner();
-        log::debug!("health requested with payload {:?}", request);
+        tracing::debug!(request = format!("{:#?}", request), "health requested");
 
         let response = proto::teleproxy::EchoResponse {};
         Ok(tonic::Response::new(response))
@@ -32,7 +32,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
         request: tonic::Request<proto::teleproxy::RegisterRequest>,
     ) -> tonic::Result<tonic::Response<proto::teleproxy::RegisterResponse>> {
         let request = request.into_inner();
-        log::debug!("register requested with payload {:?}", request);
+        tracing::debug!(request = format!("{:#?}", request), "register requested");
 
         if request.api_key != self.api_key {
             return Err(tonic::Status::unauthenticated("Invalid api key"));
@@ -82,12 +82,12 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
                     }
                 }
                 Err(e) => {
-                    log::error!("{:?}", e);
+                    tracing::error!(err = format!("{:#?}", e), "unknown error");
                     return Err(tonic::Status::internal(format!("{:?}", e)));
                 }
             },
             None => {
-                log::error!("Failed to get first request");
+                tracing::error!("failed to get first request");
                 return Err(tonic::Status::internal("Failed to get first request"));
             }
         };
@@ -95,6 +95,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
             dto::http_request::HttpRequest,
             tokio::sync::oneshot::Sender<dto::http_response::HttpResponse>,
         )>(128);
+        tracing::info!(id, "register sender to handler");
         self.forward_handler.register_sender(&id, tx);
 
         let (stream_tx, steram_rx) = tokio::sync::mpsc::channel(128);
@@ -112,7 +113,11 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
                                         break response;
                                     }
                                     Err(err) => {
-                                        log::error!("Failed to convert to dto: {:?}", err);
+                                        tracing::error!(
+                                            id,
+                                            err = format!("{:#?}", err),
+                                            "failed to convert to dto"
+                                        );
                                         break dto::http_response::INTERNAL_ERROR_RESPONSE;
                                     }
                                 }
@@ -121,7 +126,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
                         response_tx.send(response)
                     }
                     Err(err) => {
-                        log::error!("Failed to send request: {:?}", err);
+                        tracing::error!(id, err = format!("{:#?}", err), "failed to send request");
                         response_tx.send(dto::http_response::INTERNAL_ERROR_RESPONSE)
                     }
                 };
@@ -129,7 +134,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
                 match pass_response_result {
                     Ok(_) => {}
                     Err(err) => {
-                        log::error!("Failed to pass response: {:?}", err);
+                        tracing::error!(id, err = format!("{:#?}", err), "failed to pass response");
                     }
                 }
             }
@@ -145,12 +150,13 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
         request: tonic::Request<proto::teleproxy::DeregisterRequest>,
     ) -> tonic::Result<tonic::Response<proto::teleproxy::DeregisterResponse>> {
         let request = request.into_inner();
-        log::debug!("deregister requested with payload {:?}", request);
+        tracing::debug!(request = format!("{:#?}", request), "deregister requested");
 
         if request.api_key != self.api_key {
             return Err(tonic::Status::unauthenticated("Invalid api key"));
         }
 
+        tracing::info!(id = request.id, "remove from config");
         self.forward_config_store.remove_by_id(&request.id);
 
         Ok(tonic::Response::new(
@@ -163,7 +169,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
         request: tonic::Request<proto::teleproxy::DumpRequest>,
     ) -> Result<tonic::Response<proto::teleproxy::DumpResponse>, tonic::Status> {
         let request = request.into_inner();
-        log::debug!("dump requested with payload {:?}", request);
+        tracing::debug!(request = format!("{:#?}", request), "dump requested");
 
         if request.api_key != self.api_key {
             return Err(tonic::Status::unauthenticated("Invalid api key"));
@@ -177,7 +183,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
                 dump: config_dump,
             })),
             Err(err) => {
-                log::error!("failed to dump config: {err}");
+                tracing::error!(err = format!("{:#?}", err), "failed to dump config");
                 Err(Status::internal("failed to dump config"))
             }
         }
@@ -188,7 +194,7 @@ impl proto::teleproxy::teleproxy_server::Teleproxy for TeleproxyImpl {
         request: tonic::Request<proto::teleproxy::FlushRequest>,
     ) -> tonic::Result<tonic::Response<proto::teleproxy::FlushResponse>> {
         let request = request.into_inner();
-        log::debug!("flush requested with payload {:?}", request);
+        tracing::debug!(request = format!("{:#?}", request), "flush requested");
 
         if request.api_key != self.api_key {
             return Err(tonic::Status::unauthenticated("Invalid api key"));
