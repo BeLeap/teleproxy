@@ -65,6 +65,7 @@ pub async fn listen(
     id: &String,
     target: &str,
 ) -> ClientResult<()> {
+    tracing::info!(id, "starting listen");
     let (stream_tx, stream_rx) = tokio::sync::mpsc::channel(128);
     let in_stream = ReceiverStream::new(stream_rx);
     let _ = stream_tx

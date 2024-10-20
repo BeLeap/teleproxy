@@ -49,7 +49,6 @@ pub fn handler(args: &ClientArgs) {
                     .unwrap();
                     tracing::info!(id, "client registered");
 
-                    log::info!("starting listen with id: {}", id);
                     let _ = client::listen(
                         &mut teleproxy_client,
                         &args.api_key,
@@ -58,7 +57,7 @@ pub fn handler(args: &ClientArgs) {
                     )
                     .await;
 
-                    log::info!("clien deregister request with id: {}", id);
+                    tracing::info!(id, "clien deregister request");
                     let _ = client::deregister(&mut teleproxy_client, args.api_key.to_string(), id)
                         .await;
                 }
@@ -70,7 +69,7 @@ pub fn handler(args: &ClientArgs) {
                             }))
                             .await;
 
-                        println!("{}", resp.unwrap().into_inner().dump);
+                        tracing::info!("{}", resp.unwrap().into_inner().dump);
                     }
                     "flush" => {
                         teleproxy_client
