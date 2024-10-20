@@ -26,7 +26,7 @@ impl ProxyHttp for TeleproxyPingoraService {
             match dto::header::Header::try_from(header) {
                 Ok(v) => self.forward_config_store.find_by_header(v),
                 Err(err) => {
-                    log::error!("Failed to convert header: {:?}", err);
+                    tracing::error!("failed to convert header {:#?}", err);
                     None
                 }
             }
@@ -35,7 +35,7 @@ impl ProxyHttp for TeleproxyPingoraService {
         match id {
             None => Ok(false),
             Some(id) => {
-                log::info!("[forward {}] found match", id);
+                tracing::info!(id, "found match");
                 let body = match session.read_request_body().await {
                     Ok(v) => match v {
                         Some(v) => v.to_vec(),
@@ -54,6 +54,7 @@ impl ProxyHttp for TeleproxyPingoraService {
                         .collect(),
                     body,
                 };
+                tracing::trace!(id, "request to forward request: {:?}", request);
 
                 let request_sender = self.forward_handler.get_sender(&id);
 
@@ -62,11 +63,7 @@ impl ProxyHttp for TeleproxyPingoraService {
 
                 match response_rx.await {
                     Ok(response) => {
-                        log::trace!(
-                            "[forward {}] received response for forwarded request: {:?}",
-                            id,
-                            response,
-                        );
+                        tracing::debug!(id, "received response for forwarded request");
                         let mut response_header =
                             ResponseHeader::build(response.status_code.as_u16(), None).unwrap();
                         for header in response.headers {
@@ -77,7 +74,7 @@ impl ProxyHttp for TeleproxyPingoraService {
                             .write_response_header(Box::new(response_header))
                             .await
                         {
-                            log::error!("[forward {}] write_response_header error: {:?}", id, err);
+                            tracing::error!(id, "write_response_header error");
                             return Err(pingora_core::Error::new(ErrorType::InternalError));
                         };
 
@@ -85,7 +82,7 @@ impl ProxyHttp for TeleproxyPingoraService {
                             .write_response_body(Bytes::from(response.body))
                             .await
                         {
-                            log::error!("[forward {}] write_response_body error: {:?}", id, err);
+                            tracing::error!(id, "write_response_body error");
                             return Err(pingora_core::Error::new(ErrorType::InternalError));
                         };
 
@@ -94,7 +91,7 @@ impl ProxyHttp for TeleproxyPingoraService {
                         Ok(true)
                     }
                     Err(err) => {
-                        log::error!("[forward {}] response_rx error: {:?}", id, err);
+                        tracing::error!(id, "response_rx error");
 
                         Err(pingora_core::Error::new(ErrorType::InternalError))
                     }

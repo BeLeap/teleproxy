@@ -47,7 +47,7 @@ pub fn handler(args: &ClientArgs) {
                     )
                     .await
                     .unwrap();
-                    log::info!("client registered with id: {}", id);
+                    tracing::info!(id, "client registered");
 
                     log::info!("starting listen with id: {}", id);
                     let _ = client::listen(
