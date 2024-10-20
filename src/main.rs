@@ -8,10 +8,24 @@ mod proto;
 mod proxy;
 mod server;
 
+use std::env;
+
 use clap::Parser;
 
 fn main() {
-    tracing_subscriber::fmt::init();
+    match env::var("RUST_LOG_FORMAT") {
+        Ok(format) => match format.as_str() {
+            "json" => {
+                tracing_subscriber::fmt().json().init();
+            }
+            _ => {
+                tracing_subscriber::fmt().compact().init();
+            }
+        },
+        Err(_) => {
+            tracing_subscriber::fmt().compact().init();
+        }
+    };
 
     let cli = cli::Cli::parse();
 
