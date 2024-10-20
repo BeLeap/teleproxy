@@ -13,6 +13,7 @@ pub fn run(
 ) {
     let target_ip: IpAddr = server_config.target_ip.parse().expect("Invalid target_ip");
     tracing::info!(
+        component = "proxy",
         "target address: {}:{}",
         server_config.target_ip,
         server_config.target_port
@@ -30,7 +31,11 @@ pub fn run(
         },
     );
     teleproxy_service.add_tcp(&format!("0.0.0.0:{}", server_config.port).to_string());
-    tracing::info!("listening port: {}", server_config.port);
+    tracing::info!(
+        component = "proxy",
+        "listening port: {}",
+        server_config.port
+    );
 
     proxy_server.add_service(teleproxy_service);
     proxy_server.run_forever();
