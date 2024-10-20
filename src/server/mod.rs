@@ -18,7 +18,7 @@ pub async fn run(
         .unwrap();
 
     let addr = format!("[::]:{}", server_config.server_port).parse()?;
-    log::info!("listening port: {}", server_config.server_port);
+    tracing::info!("listening port: {}", server_config.server_port);
 
     let svc = proto::teleproxy::teleproxy_server::TeleproxyServer::with_interceptor(
         TeleproxyImpl {
@@ -39,7 +39,7 @@ pub async fn run(
 }
 
 fn interceptor(req: tonic::Request<()>) -> tonic::Result<tonic::Request<()>> {
-    log::debug!("request metadata {:?}", req);
+    tracing::debug!("request metadata {:?}", req);
 
     Ok(req)
 }

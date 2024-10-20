@@ -37,7 +37,7 @@ pub async fn register(
             Ok(response.id)
         }
         Err(err) => {
-            log::error!("failed to register: {:?}", err);
+            tracing::error!(err = format!("{:#?}", err), "failed to register");
             Err(ClientError::Register)
         }
     }
@@ -53,7 +53,7 @@ pub async fn deregister(client: &mut Client, api_key: String, id: String) -> Cli
     {
         Ok(_) => Ok(()),
         Err(err) => {
-            log::error!("failed to deregister with err: {:?}", err);
+            tracing::error!(err = format!("{:#?}", err), "failed to deregister");
             Err(ClientError::Deregister)
         }
     }
