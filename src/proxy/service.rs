@@ -35,7 +35,7 @@ impl ProxyHttp for TeleproxyPingoraService {
         match id {
             None => Ok(false),
             Some(id) => {
-                log::info!("forwarding request to id: {}", id);
+                log::info!("[forward {}] found match", id);
                 let body = match session.read_request_body().await {
                     Ok(v) => match v {
                         Some(v) => v.to_vec(),
@@ -73,7 +73,7 @@ impl ProxyHttp for TeleproxyPingoraService {
                             .write_response_header(Box::new(response_header))
                             .await
                         {
-                            log::error!("write_response_header error: {:?}", err);
+                            log::error!("[forward {}] write_response_header error: {:?}", id, err);
                             return Err(pingora_core::Error::new(ErrorType::InternalError));
                         };
 
@@ -81,7 +81,7 @@ impl ProxyHttp for TeleproxyPingoraService {
                             .write_response_body(Bytes::from(response.body))
                             .await
                         {
-                            log::error!("write_response_body error: {:?}", err);
+                            log::error!("[forward {}] write_response_body error: {:?}", id, err);
                             return Err(pingora_core::Error::new(ErrorType::InternalError));
                         };
 
@@ -90,7 +90,7 @@ impl ProxyHttp for TeleproxyPingoraService {
                         Ok(true)
                     }
                     Err(err) => {
-                        log::error!("response_rx error: {:?}", err);
+                        log::error!("[forward {}] response_rx error: {:?}", id, err);
 
                         Err(pingora_core::Error::new(ErrorType::InternalError))
                     }
