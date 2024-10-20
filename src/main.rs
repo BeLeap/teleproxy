@@ -14,7 +14,8 @@ use env_logger::Env;
 fn main() {
     let env = Env::default().filter_or("RUST_LOG", "INFO");
 
-    env_logger::init_from_env(env);
+    json_env_logger::init_from_env(env);
+    json_env_logger::panic_hook();
     let cli = cli::Cli::parse();
 
     match &cli.command {
