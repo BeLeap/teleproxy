@@ -47,21 +47,20 @@ pub enum RequestConversionError {
 }
 
 impl HttpRequest {
-    pub fn try_into_reqwest(self, http_client: HttpClient) -> Result<reqwest::RequestBuilder, RequestConversionError> {
+    pub fn try_into_reqwest(
+        self,
+        http_client: HttpClient,
+    ) -> Result<reqwest::RequestBuilder, RequestConversionError> {
         let method: http::Method = match self.method.parse() {
             Ok(v) => v,
             Err(err) => {
-                log::error!("Received unsupported method: {}", err);
+                tracing::error!(err = format!("{:#?}", err), "eeceived unsupported method",);
                 return Err(RequestConversionError::InvalidMethod);
             }
         };
         let client = http_client.into_reqwest(method, self.uri);
 
-        let headers: HeaderMap = self
-            .headers
-            .iter()
-            .map(|header| header.into())
-            .collect();
+        let headers: HeaderMap = self.headers.iter().map(|header| header.into()).collect();
         let client = client.headers(headers);
 
         Ok(client.body(self.body))

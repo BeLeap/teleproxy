@@ -17,12 +17,20 @@ impl Server {
             Ok(content) => match serde_yml::from_str::<Server>(&content) {
                 Ok(config) => Ok(config),
                 Err(err) => {
-                    log::warn!("Failed to desrealize file at path {}: {}", path, err);
+                    tracing::warn!(
+                        err = format!("{:#?}", err),
+                        "failed to desrealize file at path {}",
+                        path,
+                    );
                     Err(super::Error::Deserialize)
                 }
             },
             Err(err) => {
-                log::warn!("Failed to read config file at path {}: {}", path, err);
+                tracing::warn!(
+                    err = format!("{:#?}", err),
+                    "failed to read config file at path {}",
+                    path
+                );
                 Err(super::Error::ReadFile)
             }
         }

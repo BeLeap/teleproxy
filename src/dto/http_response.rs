@@ -27,18 +27,21 @@ impl TryFrom<proto::teleproxy::ListenRequest> for HttpResponse {
         let downcast_status_code = match u16::try_from(value.status_code) {
             Ok(v) => v,
             Err(e) => {
-                log::error!("failed to convert status code: {:?}", e);
+                tracing::error!(err = format!("{:#?}", e), "failed to convert status code");
                 return Err(ResponseConversionError::WrongStatusCode);
             }
         };
         let status_code = match StatusCode::from_u16(downcast_status_code) {
             Ok(v) => v,
             Err(e) => {
-                log::error!("failed to convret status code from number: {:?}", e);
+                tracing::error!(
+                    err = format!("{:#?}", e),
+                    "failed to convret status code from number"
+                );
                 return Err(ResponseConversionError::WrongStatusCode);
             }
         };
-        log::debug!("built status code: {:?}", status_code);
+        tracing::debug!("built status code: {:?}", status_code);
 
         let headers = value
             .headers
@@ -48,7 +51,7 @@ impl TryFrom<proto::teleproxy::ListenRequest> for HttpResponse {
                 value: header.1.to_string(),
             })
             .collect();
-        log::debug!("built headers: {:?}", headers);
+        tracing::debug!("built headers: {:?}", headers);
 
         let body = value.body;
 
@@ -84,7 +87,7 @@ impl HttpResponse {
                 })
             }
             Err(err) => {
-                log::error!("Failed to get body: {}", err);
+                tracing::error!(err = format!("{:#?}", err), "failed to get body");
                 Err(ResponseConversionError::WrongBody)
             }
         }

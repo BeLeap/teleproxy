@@ -33,7 +33,10 @@ impl TryFrom<(&HeaderName, &HeaderValue)> for Header {
         let value = match value.to_str() {
             Ok(v) => v,
             Err(err) => {
-                log::error!("Failed to convert header value: {}", err);
+                tracing::error!(
+                    err = format!("{:#?}", err),
+                    "failed to convert header value",
+                );
                 return Err(HeaderConversionError::InvalidHeaderValue);
             }
         }
