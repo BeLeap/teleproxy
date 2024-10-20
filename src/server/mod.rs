@@ -1,7 +1,9 @@
 mod service;
 
 use self::service::TeleproxyImpl;
-use crate::{config, forwardconfig::store::ForwardConfigStore, forwardhandler::ForwardHandler, proto};
+use crate::{
+    config, forwardconfig::store::ForwardConfigStore, forwardhandler::ForwardHandler, proto,
+};
 use log::info;
 use std::sync::Arc;
 use tonic::transport::Server;
@@ -38,7 +40,7 @@ pub async fn run(
 }
 
 fn interceptor(req: tonic::Request<()>) -> tonic::Result<tonic::Request<()>> {
-    log::trace!("request metadata {:?}", req);
+    log::debug!("request metadata {:?}", req);
 
     Ok(req)
 }
